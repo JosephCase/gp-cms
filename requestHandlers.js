@@ -80,9 +80,16 @@ function update(response, request) {
 		if(error) {
 			console.log(error);
 		} else {
-
-			console.log(fields);
-			customFunction.forEachObjectInObject(fields, update_table);
+			for(var propertyName in fields) {
+				if(fields[propertyName].action === 'edit') {
+					update_content(fields[propertyName]);
+				} else if(fields[propertyName].action === 'delete') {
+					delete_content(fields[propertyName]);
+				} else {
+					console.log('Unrecognised action: ' + fields[propertyName].action);
+				}
+			}
+			// customFunction.forEachObjectInObject(fields, update_content);
 			
 		}
 
@@ -92,14 +99,31 @@ function update(response, request) {
 	});
 }
 
-function update_table(obj) {
+function update_content(obj) {
 
-	console.log(obj.data, obj.id);
+	console.log(obj);
+	console.log(obj.data);
+
+
 
 	connection.query( 
 		'UPDATE content' + 
-	    	" SET content='" + obj.data + "'" +
-				' WHERE id=' + obj.id,
+	    	" SET content=\"" + obj.data + "\"" +
+				" WHERE id=" + obj.id,
+
+		function (err, results, fields) {
+			if(err) {
+				console.log('SQL_ERR: ' + err);
+			}
+		}
+	);
+}
+
+function delete_content(obj) {
+
+	connection.query( 
+		'DELETE FROM content' + 
+			" WHERE id=" + obj.id,
 
 		function (err, results, fields) {
 			if(err) {
@@ -175,8 +199,9 @@ function show(response) {
 	});
 }
 
-function js(response, pathname){
+function file(response, pathname, suffix){
 	fs.readFile('.' + pathname, function(err, fileContent) {
+		console.log(fileContent);
 		if (err) {
 			console.log(err);
 		} else {
@@ -192,4 +217,4 @@ exports.start2 = start2;
 exports.upload = upload;
 exports.update = update;
 exports.show = show;
-exports.js = js;
+exports.file = file;

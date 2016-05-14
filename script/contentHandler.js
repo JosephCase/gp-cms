@@ -1,19 +1,28 @@
 document.addEventListener("DOMContentLoaded", addEventListeners);
 
-var aContent = {};
+var content = {};
 
 function addEventListeners() {
+	$('.content input, .content select, .content textarea').on("change", editHandler);
+	$('.delete').on("click", deleteHandler);
+
 	$('#update').on('click', update);
-	$('.content input, .content select, .content textarea').on("change", updateHandler);
 }
 
-function updateHandler() {
-	if(addObject($(this))) {
-
+function editHandler() {
+	if(editContent($(this))) {
+		$(this).parent().addClass('edited');
 	};
 }
 
-function addObject($element) {
+function deleteHandler() {
+	console.log('delete');
+	if(deleteContent($(this))) {
+		$(this).parent().addClass('deleted');
+	};
+}
+
+function editContent($element) {
 
 	var obj = {};
 
@@ -22,28 +31,42 @@ function addObject($element) {
 	obj.id = $parent.attr('id');
 	obj.type = $parent.attr('data-type');
 	obj.data = $element.val();
+	obj.action = 'edit';
 
-	aContent['elem_' + obj.id] = obj;
+	content['elem_' + obj.id] = obj;
 
-	console.log(aContent);
+	return true;
+
+}
+
+function deleteContent($element) {
+
+	var obj = {};
+
+	var $parent = $element.parent();
+	
+	obj.id = $parent.attr('id');
+	obj.type = $parent.attr('data-type');
+	obj.action = 'delete';
+
+	content['elem_' + obj.id] = obj;
+
+	return true;
 
 }
 
 function update() {
-	console.log(JSON.stringify(aContent));
+	console.log(JSON.stringify(content));
 	$.ajax({
 	    type: "POST",
 	    url: "/update",
 	    // The key needs to match your method's input parameter (case-sensitive).
-	    data: JSON.stringify(aContent),
+	    data: JSON.stringify(content),
 	    contentType: "application/json; charset=utf-8",
 	    dataType: "json",
-	    success: function(data){alert(data);},
+	    success: function(data){alert('hello');},
 	    failure: function(errMsg) {
 	        alert(errMsg);
 	    }
 	});
 }
-
-
-

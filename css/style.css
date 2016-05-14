@@ -1,0 +1,22 @@
+.content {
+	width: 95%;
+	margin: 20px auto;
+}
+
+.content.edited {
+	border: 2px dashed blue;	
+}
+.content.deleted {
+	border: 2px dashed red;	
+}
+
+.img, textarea {
+	width: 80%;
+}
+
+.delete {
+	width: 20%;
+	cursor: pointer;
+	padding: 5px;
+	background-color: rgb(200, 200, 200);
+}
