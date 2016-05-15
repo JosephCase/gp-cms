@@ -1,12 +1,24 @@
 document.addEventListener("DOMContentLoaded", addEventListeners);
 
 var content = {};
+var newElems = 0;
 
 function addEventListeners() {
 	$('.content input, .content select, .content textarea').on("change", editHandler);
 	$('.delete').on("click", deleteHandler);
+	$('#add').on('click', addNewText)
 
 	$('#update').on('click', update);
+}
+
+function addNewText() {
+
+	$newElemt = $("<div id='new_" + (newElems++) + "' data-type='text' class='content'>" +
+		"<textarea></textarea><span class='delete'>Delete</span>" +
+		"</div>")
+	$(this).parent().before($newElemt);
+	$newElemt.children('textarea').on("change", editHandler);
+	$newElemt.children('.delete').on("click", deleteHandler);
 }
 
 function editHandler() {

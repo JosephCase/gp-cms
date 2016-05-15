@@ -104,33 +104,51 @@ function update_content(obj) {
 	console.log(obj);
 	console.log(obj.data);
 
+	if(obj.id.indexOf('new_') == -1) {
 
+		connection.query( 
+			'UPDATE content' + 
+		    	" SET content=\"" + obj.data + "\"" +
+					" WHERE id=" + obj.id,
 
-	connection.query( 
-		'UPDATE content' + 
-	    	" SET content=\"" + obj.data + "\"" +
-				" WHERE id=" + obj.id,
-
-		function (err, results, fields) {
-			if(err) {
-				console.log('SQL_ERR: ' + err);
+			function (err, results, fields) {
+				if(err) {
+					console.log('SQL_ERR: ' + err);
+				}
 			}
-		}
-	);
+		);
+
+	} else {
+		console.log('new element');
+		connection.query( 
+			'INSERT INTO content' +
+				" VALUES (NULL, \"p\", \"" + obj.data + "\", 0, NULL, 8)",
+
+			function (err, results, fields) {
+				if(err) {
+					console.log('SQL_ERR: ' + err);
+				}
+			}
+		);
+	}
 }
 
 function delete_content(obj) {
 
-	connection.query( 
-		'DELETE FROM content' + 
-			" WHERE id=" + obj.id,
 
-		function (err, results, fields) {
-			if(err) {
-				console.log('SQL_ERR: ' + err);
+	if(obj.id.indexOf('new_') == -1) {
+
+		connection.query( 
+			'DELETE FROM content' + 
+				" WHERE id=" + obj.id,
+
+			function (err, results, fields) {
+				if(err) {
+					console.log('SQL_ERR: ' + err);
+				}
 			}
-		}
-	);
+		);
+	}
 }
 
 function start(response) {
