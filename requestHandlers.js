@@ -82,14 +82,16 @@ function update(response, request) {
 		} else {
 			for(var propertyName in fields) {
 				if(fields[propertyName].action === 'edit') {
-					update_content(fields[propertyName]);
+					edit_content(fields[propertyName]);
 				} else if(fields[propertyName].action === 'delete') {
 					delete_content(fields[propertyName]);
+				} else if(fields[propertyName].action === 'add') {
+					add_content(fields[propertyName]);
 				} else {
 					console.log('Unrecognised action: ' + fields[propertyName].action);
 				}
 			}
-			// customFunction.forEachObjectInObject(fields, update_content);
+			// customFunction.forEachObjectInObject(fields, edit_content);
 			
 		}
 
@@ -99,55 +101,39 @@ function update(response, request) {
 	});
 }
 
-function update_content(obj) {
+function edit_content(obj) {
 
-	console.log(obj);
-	console.log(obj.data);
+	connection.query( 
+		'UPDATE content' + 
+	    	" SET content=\"" + obj.data + "\"" +
+				" WHERE id=" + obj.id,
 
-	if(obj.id.indexOf('new_') == -1) {
-
-		connection.query( 
-			'UPDATE content' + 
-		    	" SET content=\"" + obj.data + "\"" +
-					" WHERE id=" + obj.id,
-
-			function (err, results, fields) {
-				if(err) {
-					console.log('SQL_ERR: ' + err);
-				}
-			}
-		);
-
-	} else {
-		console.log('new element');
-		connection.query( 
-			'INSERT INTO content' +
-				" VALUES (NULL, \"p\", \"" + obj.data + "\", 0, NULL, 8)",
-
-			function (err, results, fields) {
-				if(err) {
-					console.log('SQL_ERR: ' + err);
-				}
-			}
-		);
-	}
+		sqlErrorHandler
+	);	
 }
 
 function delete_content(obj) {
 
+	connection.query( 
+		'DELETE FROM content' + 
+			" WHERE id=" + obj.id,
 
-	if(obj.id.indexOf('new_') == -1) {
+		sqlErrorHandler
+	);
+}
 
-		connection.query( 
-			'DELETE FROM content' + 
-				" WHERE id=" + obj.id,
+function add_content(obj) {
+	connection.query( 
+		'INSERT INTO content' +
+			" VALUES (NULL, \"p\", \"" + obj.data + "\", 0, NULL, 8)",
 
-			function (err, results, fields) {
-				if(err) {
-					console.log('SQL_ERR: ' + err);
-				}
-			}
-		);
+		sqlErrorHandler
+	);
+}
+
+function sqlErrorHandler(err, results, fields) {
+	if(err) {
+		console.log('SQL_ERR: ' + err);
 	}
 }
 
