@@ -1,6 +1,41 @@
+.contentList {
+	float: left;
+	width: 80%;
+}
+
+.controls {
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 20%;
+	height: 100%;
+	background-color: #b2d6ab;
+	padding: 28px;
+	box-sizing: border-box;
+}
+
+.controls p {
+	cursor: pointer;
+	padding: 10px;
+	background-color: #fff;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+}
+
+.controls #update {
+	position: absolute;
+	bottom: 28px;
+	left: 28px;
+	right: 28px;
+}
+
 .content {
 	width: 95%;
 	margin: 20px auto;
+	height: 200px;
+	overflow: hidden;
+	background-color: beige;
 }
 
 .content.edited {
@@ -10,13 +45,45 @@
 	border: 2px dashed red;	
 }
 
-.img, textarea {
-	width: 80%;
+.content * {
+	display: block;
+	float: left;
+	vertical-align: middle;
+}
+.content img, .content textarea {	
+	height: 100%;
+}
+.content span, .content select {	
+	height: 20px;
+	margin-top: 90px;
+	margin-bottom: 90px;
+	text-align: center;
+	line-height: 20px;
 }
 
-.delete {
-	width: 20%;
+.content span {
+	margin-left: 10%;
+}
+.content select {
+	margin-left: 10px;
+}
+
+img, textarea {
+	height: 100%;
+}
+textarea {
+	width: 40%;
+}
+
+.content .delete {
+	float: right;
+	width: 15%;
 	cursor: pointer;
 	padding: 5px;
 	background-color: rgb(200, 200, 200);
+	margin-left: 0;
+}
+
+#update {
+	cursor: 
 }

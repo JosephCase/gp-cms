@@ -53,7 +53,10 @@ var Updater = new function() {
 	}
 
 	this.removeFromList = function(id) {
+		console.log(id);
+		console.log(oContent);
 		delete oContent[id];
+		console.log(oContent);
 		return true;
 	}
 
@@ -88,6 +91,17 @@ var Updater = new function() {
 		obj.id = $element.attr('id');
 		obj.type = $element.attr('data-type');
 		obj.data = content;
+
+		if($element.children('.size').length > 0) {
+			obj.size = $element.children('.size').val();
+		} else{
+			obj.size = 0;
+		}
+		if($element.children('.lang').length > 0) {
+			obj.lang = $element.children('.lang').val();
+		} else {
+			obj.lang = NULL;
+		}
 
 		console.log(obj);
 

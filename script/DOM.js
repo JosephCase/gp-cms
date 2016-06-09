@@ -7,7 +7,14 @@ var DOM = new function() {
 	function addEventListeners() {
 		$('.content input, .content select, .content textarea').on("change", editHandler);
 		$('.delete').on("click", deleteHandler);
-		$('#add').on('click', addNewHandler)
+		$('#add_p').on('click', function() {
+			console.log('add p');
+			addNewTextHandler('p', this);
+		});
+		$('#add_text').on('click', function() {
+			console.log('add text');
+			addNewTextHandler('text', this);
+		});
 
 		$('#update').on('click', updateHandler);
 	}
@@ -23,25 +30,49 @@ var DOM = new function() {
 
 		var $element = $(this).parent();
 
+		var content = $element.children('textarea').val();
+
 		// check to see if this is newly added item. If it is we don't send it to the server
 		if($element[0].hasAttribute('data-new')) {
-			if(Updater.addContent($element, $(this).val())) {
+			if(Updater.addContent($element, content)) {
 				$element.addClass('edited');
 			}
 		} else {
-			if(Updater.editContent($element, $(this).val())) {
+			if(Updater.editContent($element, content)) {
 				$element.addClass('edited');
 			}
 		}
 	}
 
-	function addNewHandler() {
+	function addNewTextHandler(type, elem) {
 
-		$newElemt = $("<div id='new_" + (newElems++) + "' data-type='text' data-new class='content'>" +
-			"<textarea></textarea><span class='delete'>Delete</span>" +
-			"</div>")
-		$(this).parent().before($newElemt);
-		$newElemt.children('textarea').on("change", editHandler);
+		console.log(type);
+
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='" + type + "' data-new class='content'>" +
+			"<textarea></textarea>";
+
+		if(type == 'p') {
+			elemHTML += "<span>Size</span><select class='size'>";
+
+			for (var i = 10; i <= 20; i++) {
+				elemHTML += "<option" + ((i == 16) ? ' selected' : '') + " value='" + i + "'>" + i + "</option>";
+			}
+			elemHTML += "</select>";
+		}
+
+		elemHTML = elemHTML + "<span>Language</span><select class='lang'>" +
+			"<option selected value='NULL'>None</option>" +
+  			"<option value='eng'>English</option>" +
+  			"<option value='ita'>Italian</option>" +
+  		"</select>";
+		
+  		elemHTML = elemHTML + "<span class='delete'>Delete</span>" +
+		"</div>";
+
+		$newElemt = $(elemHTML);
+
+		$(elem).parent().before($newElemt);
+		$newElemt.children('textarea, select').on("change", editHandler);
 		$newElemt.children('.delete').on("click", deleteHandler);
 	}
 
@@ -49,16 +80,22 @@ var DOM = new function() {
 
 		var $element = $(this).parent();
 
-		// check to see if this is newly added item. If it is we don't send it to the server
-		console.log($element);
-		if($element[0].hasAttribute('data-new')) {
-			if(Updater.removeFromList($element[0].getAttribute('id'))) {
-				$element.remove();
+		//if element has already been selected to be deleted 'undelete'
+		if($element.hasClass('deleted')) {
+			if(Updater.removeFromList('elem_' + $element[0].getAttribute('id'))) {
+				$element.removeClass('deleted');
 			}
-		} else {		
-			if(Updater.deleteContent($element)) {
-				$element.addClass('deleted');
-			};
+		} else {
+			// check to see if this is newly added item. If it is we don't send it to the server
+			if($element[0].hasAttribute('data-new')) {
+				if(Updater.removeFromList($element[0].getAttribute('id'))) {
+					$element.remove();
+				}
+			} else {		
+				if(Updater.deleteContent($element)) {
+					$element.addClass('deleted');
+				};
+			}			
 		}
 	}
 

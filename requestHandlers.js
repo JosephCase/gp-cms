@@ -1,9 +1,5 @@
 'use strict';
 
-
-
-
-
 var mysql = require('mysql'),
 	querystring = require("querystring"),
 	fs = require("fs"),
@@ -90,15 +86,15 @@ function update(response, request) {
 				} else {
 					console.log('Unrecognised action: ' + fields[propertyName].action);
 				}
-			}
-			// customFunction.forEachObjectInObject(fields, edit_content);
-			
+			}			
 		}
 
 		response.end();
 
-
 	});
+
+	
+
 }
 
 function edit_content(obj) {
@@ -106,6 +102,8 @@ function edit_content(obj) {
 	connection.query( 
 		'UPDATE content' + 
 	    	" SET content=\"" + obj.data + "\"" +
+	    	", size=\"" + obj.size + "\"" +
+	    	", language=\"" + obj.lang + "\"" +
 				" WHERE id=" + obj.id,
 
 		sqlErrorHandler
@@ -125,7 +123,7 @@ function delete_content(obj) {
 function add_content(obj) {
 	connection.query( 
 		'INSERT INTO content' +
-			" VALUES (NULL, \"p\", \"" + obj.data + "\", 0, NULL, 8)",
+			" VALUES (NULL, \"" + obj.type + "\", \"" + obj.data + "\", " + obj.size + ", \"" + obj.lang + "\", 8)",
 
 		sqlErrorHandler
 	);
