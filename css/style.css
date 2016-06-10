@@ -30,6 +30,10 @@
 	right: 28px;
 }
 
+.hidden.hidden {
+	display: none;
+}
+
 .content {
 	width: 95%;
 	margin: 20px auto;
@@ -53,12 +57,17 @@
 .content img, .content textarea {	
 	height: 100%;
 }
+
 .content span, .content select {	
 	height: 20px;
 	margin-top: 90px;
 	margin-bottom: 90px;
 	text-align: center;
 	line-height: 20px;
+}
+
+.content img {
+	cursor: pointer;
 }
 
 .content span {
@@ -68,10 +77,7 @@
 	margin-left: 10px;
 }
 
-img, textarea {
-	height: 100%;
-}
-textarea {
+.content textarea {
 	width: 40%;
 }
 

@@ -10,6 +10,7 @@ var mysql = require('mysql'),
 
 
 var connection;
+var contentDirectory = 'http://giusypirrotta.local/media_content/';
 
 function createConnection () {
 
@@ -56,7 +57,8 @@ function start2(response) {
 			} else {
 
 				var html = swig.renderFile('template.html', {
-				    pageContent: results
+				    pageContent: results,
+				    contentDirectory: contentDirectory
 				});
 
 				response.write(html);
@@ -112,12 +114,18 @@ function edit_content(obj) {
 
 function delete_content(obj) {
 
-	connection.query( 
-		'DELETE FROM content' + 
-			" WHERE id=" + obj.id,
+	var query = 'DELETE FROM content' + 
+			" WHERE id=" + obj.id;
 
-		sqlErrorHandler
-	);
+	connection.query(query, function(err, results, fields) {
+		if(err) {
+			console.log(err);
+		} else {
+			if(obj.type == 'img' || obj.type == 'video') {
+				deleteFile(obj.content)
+			}
+		}
+	});
 }
 
 function add_content(obj) {
@@ -127,6 +135,11 @@ function add_content(obj) {
 
 		sqlErrorHandler
 	);
+}
+
+function deleteFile(fileName) {
+	var filePath = contentDirectory + fileName;
+	console.log(filePath);
 }
 
 function sqlErrorHandler(err, results, fields) {

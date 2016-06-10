@@ -16,6 +16,12 @@ var DOM = new function() {
 			addNewTextHandler('text', this);
 		});
 
+		$('.content img').on('click', editImage);
+		$('.content input').on('change', changeImage);
+
+		$('#add_image').on('click', selectNewImagesHandler)
+		$('#imageInput').on('change', addNewImagesHandler)
+
 		$('#update').on('click', updateHandler);
 	}
 
@@ -29,8 +35,7 @@ var DOM = new function() {
 	function editHandler() {
 
 		var $element = $(this).parent();
-
-		var content = $element.children('textarea').val();
+		var content = $(this).siblings('textarea').val();
 
 		// check to see if this is newly added item. If it is we don't send it to the server
 		if($element[0].hasAttribute('data-new')) {
@@ -42,6 +47,27 @@ var DOM = new function() {
 				$element.addClass('edited');
 			}
 		}
+	}
+
+	function editImage() {
+		$(this).siblings('input').click();
+	}
+
+	function changeImage() {
+
+		var img = $(this).siblings('img')[0]
+
+		var reader = new FileReader();
+	    reader.readAsDataURL(this.files[0]);
+	    reader.onload = function(e) {
+	    	img.src = e.target.result; 
+	    }; 
+	}
+
+	function selectNewImagesHandler(e) {
+		var imgInput = document.getElementById('imageInput');
+		imgInput.click();
+		e.preventDefault();
 	}
 
 	function addNewTextHandler(type, elem) {
@@ -71,9 +97,60 @@ var DOM = new function() {
 
 		$newElemt = $(elemHTML);
 
-		$(elem).parent().before($newElemt);
+		$('.contentList').append($newElemt);
 		$newElemt.children('textarea, select').on("change", editHandler);
 		$newElemt.children('.delete').on("click", deleteHandler);
+
+		scrollTo($newElemt);
+
+	}
+
+	function addNewImagesHandler() {
+		var newFiles = this.files;
+		console.log(newFiles.length);
+		for (var i = 0; i < newFiles.length; i++) {
+			console.log(i);
+			var reader = new FileReader();
+		    reader.addEventListener('load', function(e) {
+		    	addNewImageHandler(e);
+		    });
+		    reader.readAsDataURL(newFiles[i]);
+		}
+	}
+
+	function addNewImageHandler(e) {
+
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='image' data-new class='content'>" +
+			"<img src='" + e.target.result + "' />";
+
+		elemHTML += "<input type='file' class='hidden' accept='image/*' />";
+		elemHTML += "<span>Size</span><select class='size'>";
+
+		for (var i = 1; i <= 4; i++) {
+			elemHTML += "<option" + ((i == 1) ? ' selected' : '') + " value='" + i + "'>" + i + "</option>";
+		}
+		elemHTML += "</select>";
+
+		elemHTML = elemHTML + "<span>Language</span><select class='lang'>" +
+			"<option selected value='NULL'>None</option>" +
+  			"<option value='eng'>English</option>" +
+  			"<option value='ita'>Italian</option>" +
+  		"</select>";
+		
+  		elemHTML = elemHTML + "<span class='delete'>Delete</span>" +
+		"</div>";
+
+		$newElemt = $(elemHTML);
+
+		$('.contentList').append($newElemt);
+
+		$newElemt.children('select, input').on("change", editHandler);
+
+		$newElemt.children('img').on('click', editImage);
+		$newElemt.children('input').on('change', changeImage);
+
+		$newElemt.children('.delete').on("click", deleteHandler);
+
 	}
 
 	function deleteHandler() {
@@ -101,5 +178,14 @@ var DOM = new function() {
 
 	function updateHandler() {
 		Updater.update();
-	}	
+	}
+
+
+	// tools
+	function scrollTo(elem) {
+		$('html, body').animate({
+	        scrollTop: elem.offset().top
+	    }, 500);
+	}
+
 }

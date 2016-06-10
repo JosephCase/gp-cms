@@ -14,7 +14,8 @@
 				  		<textarea>{{ content.content }}</textarea>
 				  		{% set sizeRange = [10,11,12,13,14,15,16,17,18,19,20] %}
 				  	{% elseif content.type == 'img' %}
-				  		<img src='http://giusypirrotta.local/media_content/work/lightsign_rainbow/images/{{ content.content }}' />
+				  		<img src='{{ contentDirectory + content.content }}' />
+						<input type="file" class='hidden' accept="image/*" />
 				  		{% set sizeRange = [1,2,3,4] %}		  		
 			  		{% endif %}
 
@@ -48,6 +49,8 @@
 			</select> -->
 			<p id="add_p">Add 'p'</p>
 			<p id="add_text">Add text</p>
+			<p id="add_image">Add Images</p>
+			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
 			<p id="update">Update</p>	
 		</div>
 	</body>

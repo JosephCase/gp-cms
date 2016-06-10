@@ -53,10 +53,7 @@ var Updater = new function() {
 	}
 
 	this.removeFromList = function(id) {
-		console.log(id);
-		console.log(oContent);
 		delete oContent[id];
-		console.log(oContent);
 		return true;
 	}
 
