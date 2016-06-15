@@ -5,7 +5,7 @@ var DOM = new function() {
 	var newElems = 0;
 
 	function addEventListeners() {
-		$('.content input, .content select, .content textarea').on("change", editHandler);
+		$('.content select, .content textarea').on("change", editHandler);
 		$('.delete').on("click", deleteHandler);
 		$('#add_p').on('click', function() {
 			console.log('add p');
@@ -35,7 +35,7 @@ var DOM = new function() {
 	function editHandler() {
 
 		var $element = $(this).parent();
-		var content = $(this).siblings('textarea').val();
+		var content = $element.children('textarea').val();
 
 		// check to see if this is newly added item. If it is we don't send it to the server
 		if($element[0].hasAttribute('data-new')) {
@@ -43,6 +43,7 @@ var DOM = new function() {
 				$element.addClass('edited');
 			}
 		} else {
+			console.log(content);
 			if(Updater.editContent($element, content)) {
 				$element.addClass('edited');
 			}
@@ -55,12 +56,15 @@ var DOM = new function() {
 
 	function changeImage() {
 
-		var img = $(this).siblings('img')[0]
+		$elem = $(this);
+
+		var img = $elem.siblings('img')[0]
 
 		var reader = new FileReader();
 	    reader.readAsDataURL(this.files[0]);
 	    reader.onload = function(e) {
-	    	img.src = e.target.result; 
+	    	img.src = e.target.result;
+	    	// Updater.addContent($elem.parent(), '');
 	    }; 
 	}
 
@@ -109,18 +113,20 @@ var DOM = new function() {
 		var newFiles = this.files;
 		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			console.log(i);
+			console.log(newFiles[i]);
 			var reader = new FileReader();
-		    reader.addEventListener('load', function(e) {
-		    	addNewImageHandler(e);
+			reader.addEventListener('load', function(e) {
+		    	addNewImageHandler(e, newFiles[0]);
 		    });
 		    reader.readAsDataURL(newFiles[i]);
 		}
 	}
 
-	function addNewImageHandler(e) {
+	function addNewImageHandler(e, imgFile) {
 
-		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='image' data-new class='content'>" +
+		console.log(imgFile);
+
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new class='content'>" +
 			"<img src='" + e.target.result + "' />";
 
 		elemHTML += "<input type='file' class='hidden' accept='image/*' />";
@@ -151,6 +157,12 @@ var DOM = new function() {
 
 		$newElemt.children('.delete').on("click", deleteHandler);
 
+		// var form = new FormData();
+		// form.append('file', imgFile)
+
+		Updater.addContent($newElemt, imgFile);
+
+
 	}
 
 	function deleteHandler() {
@@ -178,6 +190,11 @@ var DOM = new function() {
 
 	function updateHandler() {
 		Updater.update();
+	}
+
+	// public functions
+	this.refresh = function() {
+		location.reload(true);
 	}
 
 
