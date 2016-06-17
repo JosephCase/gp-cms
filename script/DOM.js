@@ -113,16 +113,19 @@ var DOM = new function() {
 		var newFiles = this.files;
 		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			console.log(newFiles[i]);
-			var reader = new FileReader();
-			reader.addEventListener('load', function(e) {
-		    	addNewImageHandler(e, newFiles[0]);
-		    });
-		    reader.readAsDataURL(newFiles[i]);
+			addNewImage(newFiles[i]);
 		}
 	}
 
-	function addNewImageHandler(e, imgFile) {
+	function addNewImage(file) {
+		var reader = new FileReader();
+		reader.addEventListener('load', function(e) {
+	    	newImgLoadHandler(e, file);
+	    });
+	    reader.readAsDataURL(file);
+	}
+
+	function newImgLoadHandler(e, imgFile) {
 
 		console.log(imgFile);
 

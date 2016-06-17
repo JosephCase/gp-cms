@@ -74,6 +74,10 @@ function update(response, request) {
 	console.log("Request handler 'upload' was called.");
 
 	var form = new formidable.IncomingForm();
+
+	// allow multiple files to be uploaded
+	form.multiples = true;
+
 	console.log("About to parse");
 	form.parse(request, function(error, fields, files) {
 		console.log("parsing done");

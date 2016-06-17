@@ -74,6 +74,11 @@ var Updater = new function() {
 		
 		formData.append('content', JSON.stringify(oContent));
 
+		for(var pair of formData.entries()) {
+		   console.log(pair[0])
+		   console.log(pair[1]); 
+		}
+
 		$.ajax({
 		    type: "POST",
 		    url: "/update",
