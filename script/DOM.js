@@ -16,8 +16,8 @@ var DOM = new function() {
 			addNewTextHandler('text', this);
 		});
 
-		$('.content img').on('click', editImage);
-		$('.content input').on('change', changeImage);
+		$('.content img, .content video').on('click', changeFile);
+		$('.content input').on('change', editFile);
 
 		$('#add_image').on('click', selectNewImageHandler);
 		$('#add_video').on('click', selectNewVideoHandler);
@@ -49,21 +49,21 @@ var DOM = new function() {
 		}
 	}
 
-	function editImage() {
+	function changeFile() {
 		$(this).siblings('input').click();
 	}
 
-	function changeImage() {
+	function editFile() {
 
 		$elem = $(this);
 
-		var img = $elem.siblings('img')[0];
+		var displayElem = $elem.siblings('img, video')[0];
 		var file = this.files[0];
 
 		var reader = new FileReader();
 	    reader.readAsDataURL(file);
 	    reader.onload = function(e) {
-	    	img.src = e.target.result;
+	    	displayElem.src = e.target.result;
 
 
 
@@ -178,8 +178,8 @@ var DOM = new function() {
 
 		$newElemt.children('select, input').on("change", editHandler);
 
-		$newElemt.children('img').on('click', editImage);
-		$newElemt.children('input').on('change', changeImage);
+		$newElemt.children('img, video').on('click', changeFile);
+		$newElemt.children('input').on('change', editFile);
 
 		$newElemt.children('.delete').on("click", deleteHandler);
 
