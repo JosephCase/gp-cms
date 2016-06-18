@@ -19,8 +19,10 @@ var DOM = new function() {
 		$('.content img').on('click', editImage);
 		$('.content input').on('change', changeImage);
 
-		$('#add_image').on('click', selectNewImagesHandler)
-		$('#imageInput').on('change', addNewImagesHandler)
+		$('#add_image').on('click', selectNewImageHandler);
+		$('#add_video').on('click', selectNewVideoHandler);
+
+		$('#imageInput, #videoInput').on('change', addNewFilesHandler);
 
 		$('#update').on('click', updateHandler);
 	}
@@ -39,11 +41,8 @@ var DOM = new function() {
 
 		// check to see if this is newly added item. If it is we don't send it to the server
 		if($element[0].hasAttribute('data-new')) {
-			if(Updater.addContent($element, content)) {
-				$element.addClass('edited');
-			}
+			Updater.addContent($element, content);
 		} else {
-			console.log(content);
 			if(Updater.editContent($element, content)) {
 				$element.addClass('edited');
 			}
@@ -58,18 +57,33 @@ var DOM = new function() {
 
 		$elem = $(this);
 
-		var img = $elem.siblings('img')[0]
+		var img = $elem.siblings('img')[0];
+		var file = this.files[0];
 
 		var reader = new FileReader();
-	    reader.readAsDataURL(this.files[0]);
+	    reader.readAsDataURL(file);
 	    reader.onload = function(e) {
 	    	img.src = e.target.result;
-	    	// Updater.addContent($elem.parent(), '');
+
+
+
+	    	if($elem.parent()[0].hasAttribute('data-new')) {
+				Updater.changeNewFile($elem.parent(), file);
+			} else {
+	    		Updater.editContent($elem.parent(), file);
+			}	
+
 	    }; 
 	}
 
-	function selectNewImagesHandler(e) {
+	function selectNewImageHandler(e) {
 		var imgInput = document.getElementById('imageInput');
+		imgInput.click();
+		e.preventDefault();
+	}
+
+	function selectNewVideoHandler(e) {
+		var imgInput = document.getElementById('videoInput');
 		imgInput.click();
 		e.preventDefault();
 	}
@@ -109,30 +123,39 @@ var DOM = new function() {
 
 	}
 
-	function addNewImagesHandler() {
+	function addNewFilesHandler() {
 		var newFiles = this.files;
 		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			addNewImage(newFiles[i]);
+			loadFile(newFiles[i]);
 		}
 	}
 
-	function addNewImage(file) {
+	function loadFile(file) {
+		console.log(file);
 		var reader = new FileReader();
 		reader.addEventListener('load', function(e) {
-	    	newImgLoadHandler(e, file);
+	    	newFileLoadHandler(e, file);
 	    });
 	    reader.readAsDataURL(file);
 	}
 
-	function newImgLoadHandler(e, imgFile) {
+	function newFileLoadHandler(e, file) {
 
-		console.log(imgFile);
+		console.log(file);
 
-		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new class='content'>" +
-			"<img src='" + e.target.result + "' />";
+		var elemHTML;
 
-		elemHTML += "<input type='file' class='hidden' accept='image/*' />";
+		if(file.type.indexOf('image') != -1) {
+			elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new class='content'>";
+			elemHTML += "<img src='" + e.target.result + "' />";
+			elemHTML += "<input type='file' class='hidden' accept='image/*' />";
+		} else {
+			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new class='content'>";
+			elemHTML += "<video controls src='" + e.target.result + "'></video>";
+			elemHTML += "<input type='file' class='hidden' accept='video/*' />";
+		}
+
 		elemHTML += "<span>Size</span><select class='size'>";
 
 		for (var i = 1; i <= 4; i++) {
@@ -161,10 +184,9 @@ var DOM = new function() {
 		$newElemt.children('.delete').on("click", deleteHandler);
 
 		// var form = new FormData();
-		// form.append('file', imgFile)
+		// form.append('file', file)
 
-		Updater.addContent($newElemt, imgFile);
-
+		Updater.addContent($newElemt, file);
 
 	}
 
@@ -197,7 +219,7 @@ var DOM = new function() {
 
 	// public functions
 	this.refresh = function() {
-		location.reload(true);
+		// location.reload(true);
 	}
 
 

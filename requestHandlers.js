@@ -92,7 +92,11 @@ function update(response, request) {
 		} else {
 			for(var propertyName in oContent) {
 				if(oContent[propertyName].action === 'edit') {
-					edit_content(oContent[propertyName]);
+					if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
+						edit_file(oContent[propertyName], files[propertyName]);
+					} else {
+						edit_content(oContent[propertyName]);
+					}
 				} else if(oContent[propertyName].action === 'delete') {
 					delete_content(oContent[propertyName]);
 				} else if(oContent[propertyName].action === 'add') {
@@ -128,6 +132,15 @@ function edit_content(obj) {
 	);	
 }
 
+function edit_file(obj, file) {
+	connection.query( 
+		"select content from content where id = ?", [obj.id],
+		function (err, results) {
+			saveFile(file, err, results[0].content);
+		}
+	);
+}
+
 function delete_content(obj) {
 
 	var query = 'DELETE FROM content' + 
@@ -157,11 +170,12 @@ function add_file(obj, file) {
 	console.log('!! ADD IMAGE !!');
 	connection.query( 
 		'INSERT INTO content' +
-			" VALUES (NULL, \"" + obj.type + "\", '', " + obj.size + ", \"" + obj.lang + "\", 8);" +
-		"UPDATE content set content = CONCAT('img_', LAST_INSERT_ID(), '.jpg') where id = LAST_INSERT_ID();" +
+			" VALUES (NULL, ?, '', ?, ?, 8);" +
+		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
+		[obj.type, obj.size, obj.lang, ((obj.type == 'img') ? '.jpg' : '.mp4')],
 		function (err, results) {
-			saveFile(file, err, results);
+			saveFile(file, err, results[2][0].content);
 		}
 	);
 }
@@ -176,10 +190,11 @@ function deleteFile(file) {
 	});
 }
 
-function saveFile(file, err, results) {
+function saveFile(file, err, fileName) {
 	console.log('//save file')
-	console.log(file);
-	fs.rename(file.path, contentDirectory + results[2][0].content);
+	console.log(file.path);
+	console.log(fileName);
+	fs.rename(file.path, contentDirectory + fileName);
 }
 
 function sqlErrorHandler(err, results, fields) {

@@ -54,7 +54,7 @@
 	float: left;
 	vertical-align: middle;
 }
-.content img, .content textarea {	
+.content img, .content textarea, .content video {	
 	height: 100%;
 }
 

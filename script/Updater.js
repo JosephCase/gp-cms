@@ -38,10 +38,23 @@ var Updater = new function() {
 		
 		obj.action = 'edit';
 
+		// if it's an file, add the file seperately to the form data object
+		if(obj.type == 'img' || obj.type == 'video') {
+			formData.append('elem_' + obj.id, content);
+			//remove the file from the content object as this will not pass to the server
+			obj.data = null;
+		}
+
 		oContent['elem_' + obj.id] = obj;
 
 		return true;
 
+	}
+
+	this.changeNewFile = function($element, file) {
+		var id = $element.attr('id');
+		console.log(id, file);
+		formData.set(id, file);
 	}
 
 	this.deleteContent = function($element) {
@@ -121,39 +134,4 @@ var Updater = new function() {
 		return obj;
 
 	}
-
-	// takes a {} object and returns a FormData object
-	var objectToFormData = function(obj, form, namespace) {
-	    
-	  var fd = form || new FormData();
-	  var formKey;
-	  
-	  for(var property in obj) {
-	    if(obj.hasOwnProperty(property)) {
-	      
-	      if(namespace) {
-	        formKey = namespace + '[' + property + ']';
-	      } else {
-	        formKey = property;
-	      }
-	     
-	      // if the property is an object, but not a File,
-	      // use recursivity.
-	      if(typeof obj[property] === 'object' && !(obj[property] instanceof File)) {
-	        
-	        objectToFormData(obj[property], fd, property);
-	        
-	      } else {
-	        
-	        // if it's a string or a File object
-	        fd.append(formKey, obj[property], 'test');
-	      }
-	      
-	    }
-	  }
-	  
-	  return fd;
-	    
-	};
-
 }
