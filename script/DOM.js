@@ -68,11 +68,11 @@ var DOM = new function() {
 				});
 				if(startIndex < $elem.index()) {
 					for (var i = $elem.index(); i >= startIndex; i--) {
-						console.log($('.content')[i]);
+						Updater.reOrder($('.content').eq(i));
 					}
 				} else if (startIndex > $elem.index()) {
 					for (var i = startIndex; i >= $elem.index(); i--) {
-						console.log($('.content')[i]);
+						Updater.reOrder($('.content').eq(i));
 					}					
 				}
 			}
@@ -172,6 +172,8 @@ var DOM = new function() {
 		$newElemt.children('.delete').on("click", deleteHandler);
 
 		scrollTo($newElemt);
+
+		dragDrop();
 
 	}
 

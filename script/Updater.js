@@ -8,10 +8,7 @@ var Updater = new function() {
 	*/
 
 
-	this.addContent = function($element, content) {
-
-		console.log('add');
-		
+	this.addContent = function($element, content) {		
 
 		obj = populateContentObject($element, content);
 		
@@ -40,12 +37,12 @@ var Updater = new function() {
 
 		// if it's an file, add the file seperately to the form data object
 		if(obj.type == 'img' || obj.type == 'video') {
-			formData.append('elem_' + obj.id, content);
+			formData.append(obj.id, content);
 			//remove the file from the content object as this will not pass to the server
 			obj.data = null;
 		}
 
-		oContent['elem_' + obj.id] = obj;
+		oContent[obj.id] = obj;
 
 		return true;
 
@@ -55,6 +52,17 @@ var Updater = new function() {
 		var id = $element.attr('id');
 		console.log(id, file);
 		formData.set(id, file);
+	}
+
+	this.reOrder = function($element) {
+		// will add a new object with order, or edit if already exists
+		var id = $element.attr('id')
+		if(!oContent[id]) {
+			oContent[id] = {};
+			oContent[id].id = id;
+			oContent[id].action = 'reorder';
+		}	
+		oContent[id].position = $element.index();
 	}
 
 	this.deleteContent = function($element) {
@@ -68,7 +76,7 @@ var Updater = new function() {
 		}
 		obj.action = 'delete';
 
-		oContent['elem_' + obj.id] = obj;
+		oContent[obj.id] = obj;
 
 		return true;
 
@@ -84,13 +92,10 @@ var Updater = new function() {
 	*/
 
 	this.update = function() {
+
+		console.log(oContent);
 		
 		formData.append('content', JSON.stringify(oContent));
-
-		for(var pair of formData.entries()) {
-		   console.log(pair[0])
-		   console.log(pair[1]); 
-		}
 
 		$.ajax({
 		    type: "POST",
@@ -117,6 +122,7 @@ var Updater = new function() {
 		obj.id = $element.attr('id');
 		obj.type = $element.attr('data-type');
 		obj.data = content;
+		obj.position = $element.index();
 
 		if($element.children('.size').length > 0) {
 			obj.size = $element.children('.size').val();
@@ -128,8 +134,6 @@ var Updater = new function() {
 		} else {
 			obj.lang = NULL;
 		}
-
-		console.log(obj);
 
 		return obj;
 

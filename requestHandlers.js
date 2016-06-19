@@ -51,7 +51,8 @@ function start2(response) {
 		'SELECT content.* FROM page as childPage' + 
 	    	' inner join content' + 
 				' on content.page_id = childPage.id' +
-				' and childPage.url = "lightsign_rainbow"',
+				' and childPage.url = "lightsign_rainbow"' +
+				' ORDER BY position',
 
 		function (err, results, fields) {
 			if(err) {
@@ -105,6 +106,8 @@ function update(response, request) {
 					} else {
 						add_content(oContent[propertyName]);
 					}
+				} else if(oContent[propertyName].action === 'reorder') {
+					reOrder_content(oContent[propertyName]);
 				} else {
 					console.log('Unrecognised action: ' + oContent[propertyName].action);
 				}
@@ -122,19 +125,16 @@ function update(response, request) {
 function edit_content(obj) {
 
 	connection.query( 
-		'UPDATE content' + 
-	    	" SET content=\"" + obj.data + "\"" +
-	    	", size=\"" + obj.size + "\"" +
-	    	", language=\"" + obj.lang + "\"" +
-				" WHERE id=" + obj.id,
-
+		"UPDATE content SET content=?, size=?, language=?, position=? WHERE id=?",
+		[obj.data, obj.size, obj.lang, obj.position, obj.id],
 		sqlErrorHandler
 	);	
 }
 
 function edit_file(obj, file) {
 	connection.query( 
-		"select content from content where id = ?", [obj.id],
+		"select content from content where id = ?",
+		[obj.id],
 		function (err, results) {
 			saveFile(file, err, results[0].content);
 		}
@@ -160,8 +160,17 @@ function delete_content(obj) {
 function add_content(obj) {
 	connection.query( 
 		'INSERT INTO content' +
-			" VALUES (NULL, \"" + obj.type + "\", \"" + obj.data + "\", " + obj.size + ", \"" + obj.lang + "\", 8)",
+			" VALUES (NULL, ?, ?, ?, ?, ?, 8)",
+		[obj.type, obj.data, obj.size, obj.lang, obj.position],
+		sqlErrorHandler
+	);
+}
 
+function reOrder_content(obj) {
+
+	connection.query( 
+		'UPDATE content SET position=? WHERE id=?',
+		[obj.position, obj.id],
 		sqlErrorHandler
 	);
 }
@@ -169,11 +178,10 @@ function add_content(obj) {
 function add_file(obj, file) {
 	console.log('!! ADD IMAGE !!');
 	connection.query( 
-		'INSERT INTO content' +
-			" VALUES (NULL, ?, '', ?, ?, 8);" +
+		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, 8);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
-		[obj.type, obj.size, obj.lang, ((obj.type == 'img') ? '.jpg' : '.mp4')],
+		[obj.type, obj.size, obj.lang, obj.position, ((obj.type == 'img') ? '.jpg' : '.mp4')],
 		function (err, results) {
 			saveFile(file, err, results[2][0].content);
 		}
