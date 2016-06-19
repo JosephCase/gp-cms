@@ -25,6 +25,45 @@ var DOM = new function() {
 		$('#imageInput, #videoInput').on('change', addNewFilesHandler);
 
 		$('#update').on('click', updateHandler);
+
+		dragDrop();
+		
+		// $('.content').on("dragleave", function() {
+		// 	this.style.paddingBottom = 0;
+		// 	this.style.paddingTop = 0;
+		// });
+
+	}
+
+	function dragDrop() {
+
+		var $elem;
+
+		$('.content').on("dragstart", function() {
+			$elem = $(this);
+			$elem.addClass('moving');
+		});
+		$('.content').on("dragover", function(e) {
+			if($elem) {
+				var thisRect = this.getBoundingClientRect();
+				if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {
+					$(this).before($elem);
+				} else {
+					$(this).after($elem);					
+				}				
+			}
+		});
+		$('.content').on('dragend', function() {
+			if($elem) {
+				$elem.removeClass('moving');
+				$elem.children('.dragHandle').on("mousedown", function() {
+					$elem = $(this).parent();
+					$elem.addClass('moving');
+					$elem.remove();
+					$elem = null;
+				});
+			}
+		})
 	}
 
 
@@ -53,7 +92,7 @@ var DOM = new function() {
 		$(this).siblings('input').click();
 	}
 
-	function editFile() {
+	function editFile(e) {
 
 		$elem = $(this);
 
@@ -127,8 +166,34 @@ var DOM = new function() {
 		var newFiles = this.files;
 		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			loadFile(newFiles[i]);
+			$newElem = newFileLoadHandler(newFiles[i], i);
+			previewFile($newElem, newFiles[i]);
 		}
+		dragDrop();
+	}
+
+	function previewFile($newElemt, file) {
+
+		var reader = new FileReader();
+		reader.addEventListener('load', function(e) {
+
+			$newElemt.children('img, video')[0].src = e.target.result;
+			$newElemt.children('img, video')[0].removeAttribute('poster');
+
+	    	$newElemt.children('select, input').on("change", editHandler);
+
+			$newElemt.children('img, video').on('click', changeFile);
+			$newElemt.children('input').on('change', editFile);
+
+			$newElemt.children('.delete').on("click", deleteHandler);
+
+			Updater.addContent($newElemt, file);
+	    });
+	    setTimeout(function() {
+	    	reader.readAsDataURL(file);
+	    }, 500);
+
+		
 	}
 
 	function loadFile(file) {
@@ -140,7 +205,7 @@ var DOM = new function() {
 	    reader.readAsDataURL(file);
 	}
 
-	function newFileLoadHandler(e, file) {
+	function newFileLoadHandler(file, j) {
 
 		console.log(file);
 
@@ -148,11 +213,11 @@ var DOM = new function() {
 
 		if(file.type.indexOf('image') != -1) {
 			elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new class='content'>";
-			elemHTML += "<img src='" + e.target.result + "' />";
+			elemHTML += "<img src='img/loading.gif' />";
 			elemHTML += "<input type='file' class='hidden' accept='image/*' />";
 		} else {
 			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new class='content'>";
-			elemHTML += "<video controls src='" + e.target.result + "'></video>";
+			elemHTML += "<video controls poster='img/loading.gif'></video>";
 			elemHTML += "<input type='file' class='hidden' accept='video/*' />";
 		}
 
@@ -176,17 +241,13 @@ var DOM = new function() {
 
 		$('.contentList').append($newElemt);
 
-		$newElemt.children('select, input').on("change", editHandler);
+		console.log(j);
 
-		$newElemt.children('img, video').on('click', changeFile);
-		$newElemt.children('input').on('change', editFile);
+		if(j == 0) {
+			scrollTo($newElemt);
+		}
 
-		$newElemt.children('.delete').on("click", deleteHandler);
-
-		// var form = new FormData();
-		// form.append('file', file)
-
-		Updater.addContent($newElemt, file);
+		return $newElemt
 
 	}
 
@@ -219,7 +280,7 @@ var DOM = new function() {
 
 	// public functions
 	this.refresh = function() {
-		// location.reload(true);
+		location.reload(true);
 	}
 
 

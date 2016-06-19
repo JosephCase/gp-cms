@@ -37,9 +37,10 @@
 .content {
 	width: 95%;
 	margin: 20px auto;
-	height: 200px;
+	height: 100px;
 	overflow: hidden;
 	background-color: beige;
+	user-select: none;      
 }
 
 .content.edited {
@@ -49,19 +50,32 @@
 	border: 2px dashed red;	
 }
 
+.content.moving {
+	opacity: 0.5;
+}
+
+
 .content * {
 	display: block;
 	float: left;
 	vertical-align: middle;
+	cursor: default;
+	user-select: none;           
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* IE/Edge */
+	-webkit-touch-callout: none; /* iOS Safari */     
 }
+
 .content img, .content textarea, .content video {	
 	height: 100%;
+	draggable: false;
 }
 
 .content span, .content select {	
 	height: 20px;
-	margin-top: 90px;
-	margin-bottom: 90px;
+	margin-top: 40px;
+	margin-bottom: 40px;
 	text-align: center;
 	line-height: 20px;
 }
