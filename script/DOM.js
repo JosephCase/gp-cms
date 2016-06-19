@@ -37,11 +37,15 @@ var DOM = new function() {
 
 	function dragDrop() {
 
+		console.log('dragDrop');
+
 		var $elem;
+		var startIndex;
 
 		$('.content').on("dragstart", function() {
 			$elem = $(this);
 			$elem.addClass('moving');
+			startIndex = $elem.index();
 		});
 		$('.content').on("dragover", function(e) {
 			if($elem) {
@@ -62,6 +66,15 @@ var DOM = new function() {
 					$elem.remove();
 					$elem = null;
 				});
+				if(startIndex < $elem.index()) {
+					for (var i = $elem.index(); i >= startIndex; i--) {
+						console.log($('.content')[i]);
+					}
+				} else if (startIndex > $elem.index()) {
+					for (var i = startIndex; i >= $elem.index(); i--) {
+						console.log($('.content')[i]);
+					}					
+				}
 			}
 		})
 	}
@@ -131,7 +144,7 @@ var DOM = new function() {
 
 		console.log(type);
 
-		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='" + type + "' data-new class='content'>" +
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='" + type + "' draggable='true' data-new class='content'>" +
 			"<textarea></textarea>";
 
 		if(type == 'p') {
@@ -212,11 +225,11 @@ var DOM = new function() {
 		var elemHTML;
 
 		if(file.type.indexOf('image') != -1) {
-			elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new class='content'>";
-			elemHTML += "<img src='img/loading.gif' />";
+			elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new draggable='true' class='content'>";
+			elemHTML += "<img src='img/loading.gif' draggable='false' />";
 			elemHTML += "<input type='file' class='hidden' accept='image/*' />";
 		} else {
-			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new class='content'>";
+			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new draggable='true' class='content'>";
 			elemHTML += "<video controls poster='img/loading.gif'></video>";
 			elemHTML += "<input type='file' class='hidden' accept='video/*' />";
 		}
