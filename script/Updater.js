@@ -3,11 +3,23 @@ var Updater = new function() {
 	var formData = new FormData();
 	var oContent = {};
 
+	//SET THE PAGE ID
+	this.setPageId = function(id) {
+		console.log(id);
+		formData.set('pageId', id);
+	}
+
+	// EDIT PAGE DETAILS
+	this.editPageName = function() {
+		formData.set('pageName', this.value);
+	}
+	this.changeMainImage = function(file) {		
+		formData.set('mainImage', file);
+	}
+
 	/*
 	EDIT CONTENT FUNCTIONS
 	*/
-
-
 	this.addContent = function($element, content) {		
 
 		obj = populateContentObject($element, content);

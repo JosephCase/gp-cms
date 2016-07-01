@@ -5,13 +5,17 @@ var mysql = require('mysql'),
 	fs = require("fs"),
 	formidable = require("formidable"),
 	customFunction = require("./customFunction"),
-	path = require('path'),
-	swig = require('swig');
+	Path = require('path'),
+	swig = require('swig'),
+	im = require('imagemagick');
+
+var imageSizes = [1000, 700, 500];
 
 
 
 var connection;
 var contentDirectory = 'content/';
+var pageId = null;
 
 function createConnection () {
 
@@ -43,24 +47,24 @@ function createConnection () {
 
 createConnection();
 
-
-function start2(response) {
-	console.log("Request handler 'start2' was called.");
+// get the page content and send it to the client
+function getPage(response) {
 
 	connection.query(
-		'SELECT content.* FROM page as childPage' + 
+		"SELECT name, mainImage_url, id FROM page where id = ?;" +
+		'SELECT content.* FROM page' + 
 	    	' inner join content' + 
-				' on content.page_id = childPage.id' +
-				' and childPage.url = "lightsign_rainbow"' +
+				' on content.page_id = page.id and page.id = ?' +
 				' ORDER BY position',
-
+		[8, 8],
 		function (err, results, fields) {
 			if(err) {
 				console.log(err);
 			} else {
 
-				var html = swig.renderFile('template.html', {
-				    pageContent: results,
+				var html = swig.renderFile('templates/page.html', {
+					page: results[0][0],
+				    pageContent: results[1],
 				    contentDirectory: contentDirectory
 				});
 
@@ -71,7 +75,8 @@ function start2(response) {
 	);
 }
 
-function update(response, request) {
+//update the page
+function updatePage(response, request) {
 	console.log("Request handler 'upload' was called.");
 
 	var form = new formidable.IncomingForm();
@@ -81,37 +86,17 @@ function update(response, request) {
 
 	console.log("About to parse");
 	form.parse(request, function(error, fields, files) {
-		console.log("parsing done");
+
+		// get the page id
+		pageId = fields.pageId;
 		
 		var oContent = JSON.parse(fields.content);
-
-		console.log(oContent);
-		console.log(files);
 
 		if(error) {
 			console.log(error);
 		} else {
-			for(var propertyName in oContent) {
-				if(oContent[propertyName].action === 'edit') {
-					if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
-						edit_file(oContent[propertyName], files[propertyName]);
-					} else {
-						edit_content(oContent[propertyName]);
-					}
-				} else if(oContent[propertyName].action === 'delete') {
-					delete_content(oContent[propertyName]);
-				} else if(oContent[propertyName].action === 'add') {
-					if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
-						add_file(oContent[propertyName], files[propertyName]);
-					} else {
-						add_content(oContent[propertyName]);
-					}
-				} else if(oContent[propertyName].action === 'reorder') {
-					reOrder_content(oContent[propertyName]);
-				} else {
-					console.log('Unrecognised action: ' + oContent[propertyName].action);
-				}
-			}			
+			updatePageDetails(fields.pageName, files['mainImage']);
+			updatePageContent(oContent, files);		
 		}
 
 		response.end();
@@ -120,6 +105,66 @@ function update(response, request) {
 
 	
 
+}
+
+// update the main image and page name (also updates url to_match_page_name)
+function updatePageDetails(pageName, mainImage) {
+	// if the page name is set, change it on the server
+	if(pageName) {
+
+		var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
+
+		connection.query( 
+			"UPDATE page SET name=?, url=? WHERE id=?",
+			[pageName, pageUrl, pageId],
+			sqlErrorHandler
+		);
+	}
+
+	//if the image has changed, overwrite the old image
+	if(mainImage) {
+		connection.query( 
+			"select mainImage_url from page where id = ?",
+			[pageId],
+			function (err, results) {
+				console.log(results);
+				if(err) {
+					console.log(err)
+				} else {
+					var newPath = contentDirectory + results[0].mainImage_url;
+					fs.rename(mainImage.path, newPath, function() {
+						resizeImage(newPath);
+					});
+				}
+			}
+		);
+	}
+
+}
+
+// update the content within the page
+function updatePageContent(oContent, files) {
+	for(var propertyName in oContent) {
+		if(oContent[propertyName].action === 'edit') {
+			if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
+				edit_file(oContent[propertyName], files[propertyName]);
+			} else {
+				edit_content(oContent[propertyName]);
+			}
+		} else if(oContent[propertyName].action === 'delete') {
+			delete_content(oContent[propertyName]);
+		} else if(oContent[propertyName].action === 'add') {
+			if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
+				add_file(oContent[propertyName], files[propertyName]);
+			} else {
+				add_content(oContent[propertyName]);
+			}
+		} else if(oContent[propertyName].action === 'reorder') {
+			reOrder_content(oContent[propertyName]);
+		} else {
+			console.log('Unrecognised action: ' + oContent[propertyName].action);
+		}
+	}
 }
 
 function edit_content(obj) {
@@ -132,10 +177,12 @@ function edit_content(obj) {
 }
 
 function edit_file(obj, file) {
+	console.log(obj);
 	connection.query( 
 		"select content from content where id = ?",
 		[obj.id],
 		function (err, results) {
+			console.log(results);
 			saveFile(file, err, results[0].content);
 		}
 	);
@@ -189,92 +236,53 @@ function add_file(obj, file) {
 }
 
 function deleteFile(file) {
-	console.log(file);
-	// var filePath = contentDirectory + file;
-	fs.unlink(contentDirectory + path.basename(file), function(err) {
-		if(err) {
-			console.log("Could't delete file: " + err);
-		}
-	});
+	var filePath = contentDirectory + Path.basename(file);
+	fs.unlink(filePath, deleteFile_handle);
+	for (var i = imageSizes.length - 1; i >= 0; i--) {
+		var resizedFilePath = filePath.replace('.jpg', '_x' + imageSizes[i] + '.jpg');
+		fs.unlink(resizedFilePath, deleteFile_handle);	
+	}
+}
+
+function deleteFile_handle(err) {
+	if(err) {
+		console.log("Could't delete file: " + err);
+	}
 }
 
 function saveFile(file, err, fileName) {
 	console.log('//save file')
-	console.log(file.path);
-	console.log(fileName);
-	fs.rename(file.path, contentDirectory + fileName);
+	var newPath = contentDirectory + fileName;
+	fs.rename(file.path, newPath, function() {
+		resizeImage(newPath);
+	});
 }
+
+function resizeImage(path) {
+	for (var i = imageSizes.length - 1; i >= 0; i--) {		
+		createNewSize(path, imageSizes[i]);
+	}
+}
+
+function createNewSize(path, size) {
+
+	var newPath = path.replace('.jpg', '_x' + size + '.jpg');
+
+	im.resize({
+	  srcPath: path,
+	  dstPath: newPath,
+	  width:   size,
+	  filter: 'Lanczos'
+	}, function(err, stdout, stderr){
+	  if (err) throw err;
+	  console.log('resized!');
+	});
+} 
 
 function sqlErrorHandler(err, results, fields) {
 	if(err) {
 		console.log('SQL_ERR: ' + err);
 	}
-}
-
-function start(response) {
-	console.log("Request handler 'start' was called.");
-
-	fs.readFile("uploadForm.html", function(err, html) {
-		if (err) {
-			console.log(err);
-		} else {
-			response.writeHead(200, {"Content-Type": "text/html"});
-			response.write(html);
-			response.end();
-		}
-	});
-}
-
-
-
-
-
-
-
-
-function upload(response, request) {
-	console.log("Request handler 'upload' was called.");
-
-	var form = new formidable.IncomingForm();
-	console.log("About to parse");
-	form.parse(request, function(error, fields, files) {
-		console.log("parsing done");
-		if(error) {
-			console.log(error);
-		} else if (customFunction.isEmpty(files)) {			
-			response.writeHead(404, {"Content-Type": "text/plain"});
-			response.write("404 Not found");
-			response.end();
-		} else {
-			fs.rename(files.upload.path, "tmp/test.jpg", function(err) {
-				if (err) {
-					fs.unlink("tmp/test.jpg");
-					fs.rename(files.upload.path, "tmp/test.jpg");
-				}
-			});
-			response.writeHead(200, {"Content-Type": "text/html"});
-			response.write("received image:<br/>");
-			response.write("<img src='/show' />");
-			response.end();
-		}
-
-
-	});
-}
-
-function show(response) {
-	console.log("Request handler 'show' was called.")
-	fs.readFile("tmp/test.jpg", "binary", function (error, file) {
-		if(error) {
-			response.writeHead(500, {"Content-Type": "text/plain"});
-			response.write(error + "/n");
-			response.end();
-		} else {
-			response.writeHead(200, {"Content-Type": "image/jpg"});
-			response.write(file, "binary");
-			response.end();
-		}
-	});
 }
 
 function file(response, pathname, suffix){
@@ -290,9 +298,6 @@ function file(response, pathname, suffix){
 	});
 }
 
-exports.start = start;
-exports.start2 = start2;
-exports.upload = upload;
-exports.update = update;
-exports.show = show;
+exports.getPage = getPage;
+exports.updatePage = updatePage;
 exports.file = file;

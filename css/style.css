@@ -1,5 +1,21 @@
+#pageDetails {
+	margin: 10px 0 60px 0;
+	padding: 2.5%;
+	/*border-bottom: 1px solid black;*/
+	overflow-y: auto;
+	width: 80%;
+	box-sizing: border-box;
+}
+
+#pageDetails > div {
+	margin-bottom: 40px;
+    width: 30%;
+}
+#pageDetails img {
+	width: 100%;
+}
+
 .contentList {
-	float: left;
 	width: 80%;
 }
 

@@ -1,0 +1,75 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+		<script type='text/javascript' src='/script/DOM.js'></script>
+		<script type='text/javascript' src='/script/Updater.js'></script>
+	</head>
+	<body>
+		<input id='pageId' type='hidden' value={{page.id}} />
+		<div id='pageDetails'>
+			<div id='pageName'>
+				<p>Page name:</p>
+				<input type='text' value='{{ page.name }}' />
+			</div>
+			<div id='mainImage'>
+				<p>Main image:</p>
+				<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
+				<input type="file" class='hidden' accept="image/*" />
+			</div>
+		</div>
+		<div class='contentList'>
+			{% for content in pageContent %}
+			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
+				  	{% if content.type == 'p' || content.type == 'text' %}
+				  		<textarea draggable="true">{{ content.content }}</textarea>
+				  		{% set sizeRange = [10,11,12,13,14,15,16,17,18,19,20] %}
+				  	{% elseif content.type == 'img' %}
+				  		<img src='{{ contentDirectory + content.content }}' draggable="false"  />
+						<input type="file" class='hidden' accept="image/*" />
+				  		{% set sizeRange = [1,2,3,4] %}
+				  	{% elseif content.type == 'video' %}
+				  		<video controls src='{{ contentDirectory + content.content }}'></video>
+						<input type="file" class='hidden' accept="video/mp3" />
+				  		{% set sizeRange = [1,2,3,4] %}	  		
+			  		{% endif %}
+
+				  	{% if content.type == 'p' || content.type == 'img' %}
+			  			<span>Size</span>
+				  		<select class='size'>
+				  			{% for size in sizeRange %}
+				  				{% if (content.size == 0 && size == 16) || size == content.size %}
+				  					<option selected value='{{ size }}'>{{ size }}</option>
+				  				{% else %}
+				  					<option value='{{ size }}'>{{ size }}</option>
+						  		{% endif %}
+				  			{% endfor %}
+				  		</select>
+			  		{% endif %}
+
+			  		<span>Language</span>
+			  		<select class='lang'>
+			  			<option {% if content.language == 'NUL' %}selected {% endif %}value='NULL'>None</option>
+			  			<option {% if content.language == 'eng' %}selected {% endif %}value='eng'>English</option>
+			  			<option {% if content.language == 'ita' %}selected {% endif %}value='ita'>Italian</option>
+			  		</select>
+			  		<span class="delete">Delete</span>
+				 </div>
+			{% endfor %}
+		</div>
+		
+		<div class='controls'>
+			<!-- <select>
+				<option value='text'>Text</option>
+			</select> -->
+			<p id="add_p">Add 'p'</p>
+			<p id="add_text">Add text</p>
+			<p id="add_image">Add Images</p>
+			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
+			<p id="add_video">Add Video</p>
+			<input type="file" id="videoInput" class='hidden' multiple accept="video/mp3" />
+			<p id="update">Update</p>	
+		</div>
+	</body>
+</html>

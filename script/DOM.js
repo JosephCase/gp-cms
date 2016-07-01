@@ -1,10 +1,23 @@
 var DOM = new function() {
 
-	document.addEventListener("DOMContentLoaded", addEventListeners);
+	document.addEventListener("DOMContentLoaded", pageReadyHandler);
 
 	var newElems = 0;
 
+	function pageReadyHandler() {
+		Updater.setPageId(document.getElementById('pageId').value);
+		addEventListeners();
+	}
+
 	function addEventListeners() {
+
+		// edit page details
+		$('#pageName input').on('change', Updater.editPageName);
+
+		$('#mainImage img').on('click', changeFile);
+		$('#mainImage input').on('change', editFile);
+
+		// page content
 		$('.content select, .content textarea').on("change", editHandler);
 		$('.delete').on("click", deleteHandler);
 		$('#add_p').on('click', function() {
@@ -85,7 +98,6 @@ var DOM = new function() {
 	EVENT HANDLERS
 	*/
 
-
 	function editHandler() {
 
 		var $element = $(this).parent();
@@ -108,6 +120,7 @@ var DOM = new function() {
 	function editFile(e) {
 
 		$elem = $(this);
+		$parent = $elem.parent();
 
 		var displayElem = $elem.siblings('img, video')[0];
 		var file = this.files[0];
@@ -117,12 +130,14 @@ var DOM = new function() {
 	    reader.onload = function(e) {
 	    	displayElem.src = e.target.result;
 
+	    	console.log($parent);
 
-
-	    	if($elem.parent()[0].hasAttribute('data-new')) {
-				Updater.changeNewFile($elem.parent(), file);
+	    	if($parent.attr('id') == 'mainImage') {
+				Updater.changeMainImage(file);   		
+	    	} else if($parent[0].hasAttribute('data-new')) {
+				Updater.changeNewFile($parent, file);
 			} else {
-	    		Updater.editContent($elem.parent(), file);
+	    		Updater.editContent($parent, file);
 			}	
 
 	    }; 
