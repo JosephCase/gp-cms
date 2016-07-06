@@ -111,7 +111,7 @@ var Updater = new function() {
 
 		$.ajax({
 		    type: "POST",
-		    url: "/update",
+		    url: "/updatePage",
 		    // The key needs to match your method's input parameter (case-sensitive).
 		    data: formData,
 			processData: false,
