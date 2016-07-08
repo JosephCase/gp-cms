@@ -5,7 +5,8 @@ var mysql = require('mysql'),
 	formidable = require("formidable"),
 	Path = require('path'),
 	swig = require('swig'),
-	im = require('imagemagick');
+	im = require('imagemagick'),
+	url = require("url");
 
 var imageSizes = [1000, 700, 500];
 
@@ -46,7 +47,9 @@ function createConnection () {
 createConnection();
 
 // get the page content and send it to the client
-function getPage(response) {
+function getPage(response, request) {
+
+	pageId = url.parse(request.url).query;
 
 	connection.query(
 		"SELECT name, mainImage_url, id FROM page where id = ?;" +
@@ -54,7 +57,7 @@ function getPage(response) {
 	    	' inner join content' + 
 				' on content.page_id = page.id and page.id = ?' +
 				' ORDER BY position',
-		[8, 8],
+		[pageId, pageId],
 		function (err, results, fields) {
 			if(err) {
 				console.log(err);
@@ -75,14 +78,12 @@ function getPage(response) {
 
 //update the page
 function updatePage(response, request) {
-	console.log("Request handler 'upload' was called.");
 
 	var form = new formidable.IncomingForm();
 
 	// allow multiple files to be uploaded
 	form.multiples = true;
 
-	console.log("About to parse");
 	form.parse(request, function(error, fields, files) {
 
 		// get the page id
@@ -125,7 +126,6 @@ function updatePageDetails(pageName, mainImage) {
 			"select mainImage_url from page where id = ?",
 			[pageId],
 			function (err, results) {
-				console.log(results);
 				if(err) {
 					console.log(err)
 				} else {
@@ -175,12 +175,10 @@ function edit_content(obj) {
 }
 
 function edit_file(obj, file) {
-	console.log(obj);
 	connection.query( 
 		"select content from content where id = ?",
 		[obj.id],
 		function (err, results) {
-			console.log(results);
 			saveFile(file, err, results[0].content);
 		}
 	);
@@ -205,8 +203,8 @@ function delete_content(obj) {
 function add_content(obj) {
 	connection.query( 
 		'INSERT INTO content' +
-			" VALUES (NULL, ?, ?, ?, ?, ?, 8)",
-		[obj.type, obj.data, obj.size, obj.lang, obj.position],
+			" VALUES (NULL, ?, ?, ?, ?, ?, ?)",
+		[obj.type, obj.data, obj.size, obj.lang, obj.position, pageId],
 		sqlErrorHandler
 	);
 }
@@ -223,10 +221,10 @@ function reOrder_content(obj) {
 function add_file(obj, file) {
 	console.log('!! ADD IMAGE !!');
 	connection.query( 
-		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, 8);" +
+		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
-		[obj.type, obj.size, obj.lang, obj.position, ((obj.type == 'img') ? '.jpg' : '.mp4')],
+		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '.mp4')],
 		function (err, results) {
 			saveFile(file, err, results[2][0].content);
 		}

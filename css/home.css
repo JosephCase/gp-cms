@@ -1,0 +1,21 @@
+.section{
+	float: left;
+	width: 14%;
+	text-align: center;
+}
+.section h5 {
+	font-weight: bold;
+	/*border: 1px solid black;*/
+	line-height: 50px;
+	margin: 0;
+	background-color: grey;
+}
+.section p {
+	cursor: pointer;
+	background-color: red;
+	margin: 5px;
+	line-height: 40px;
+}
+.section p.add {
+	background-color: pink;
+}

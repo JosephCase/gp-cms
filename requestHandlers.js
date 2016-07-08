@@ -7,11 +7,12 @@ function file(response, pathname, suffix){
 		console.log(fileContent);
 		if (err) {
 			console.log('READ FILE ERROR: ' + err);
+			response.writeHead(404);
 		} else {
 			response.writeHead(200);
 			response.write(fileContent);
-			response.end();
 		}
+		response.end();
 	});
 }
 

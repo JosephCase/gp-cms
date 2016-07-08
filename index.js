@@ -6,7 +6,7 @@ var contentPage = require("./contentPage");
 
 var handle = {}
 handle["/"] = homePage.getPage;
-handle["/getPage"] = contentPage.getPage;
+handle["/page"] = contentPage.getPage;
 handle["/updatePage"] = contentPage.updatePage;
 handle["file"] = requestHandlers.file;
 

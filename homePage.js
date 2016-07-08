@@ -44,11 +44,13 @@ createConnection();
 function getPage(response) {
 
 	connection.query(
-		"SELECT parentPage.id section_id, parentPage.name section_name, parentPage.isParent isParent, page.id page_id, page.name page_name " +
-			"FROM page as parentPage " +
-				"inner join navigation on navigation.page_id = parentPage.id " +
-				"left join page on page.parentPage_id = parentPage.id " +
-			"ORDER BY section_id, page_id",
+		"select parentPage.id section_id, parentPage.name section_name, childPage.id page_id, childPage.name page_name " +
+			"from navigation " +
+		    	"INNER JOIN page as parentPage " +
+		        	"on parentPage.id = navigation.page_id " +
+		    	"left join page as childPage " +
+		        	"on childPage.parentPage_id = parentPage.id " +
+		        "order by section_id, page_id",
 		function (err, results, fields) {
 			if(err) {
 				console.log(err);
@@ -70,14 +72,15 @@ function nestResults(results) {
 	var nestedResults = [];
 	var section = null;
 	for (var i = 0; i < results.length; i++) {
+		console.log(results[i]);
 		if(!section || results[i].section_id != section.id) {
 			section = {id: results[i].section_id, name: results[i].section_name};
-			if(results[i].isParent) {
-				section.pages = [{id: results[i].page_id}, {name: results[i].page_name}]
+			if(results[i].page_id && results[i].page_name) {
+				section.pages = [{id: results[i].page_id, name: results[i].page_name}];
 			}
 			nestedResults.push(section);
 		} else {
-			section.pages.push({id: results[i].page_id}, {name: results[i].page_name})
+			section.pages.push({id: results[i].page_id, name: results[i].page_name});
 		}
 	}
 	return nestedResults;
