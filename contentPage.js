@@ -52,7 +52,7 @@ function getPage(response, request) {
 	pageId = url.parse(request.url).query;
 
 	connection.query(
-		"SELECT name, mainImage_url, id FROM page where id = ?;" +
+		"SELECT name, mainImage_url, id, parentPage_id hasParent FROM page where id = ?;" +
 		'SELECT content.* FROM page' + 
 	    	' inner join content' + 
 				' on content.page_id = page.id and page.id = ?' +
