@@ -10,7 +10,7 @@
 	<body>
 		{% for section in sections %}
 		  	<div class='section' id={{section.id}}>
-				<h5>{{section.name}}</h5> 
+				<h5{% if !section.pages %} class='page' {% endif %}>{{section.name}}</h5> 
 				{% if section.pages %} 
 					<p class='add' data-section_id={{section.id}}>Add</p>
 					{% for page in section.pages %}
