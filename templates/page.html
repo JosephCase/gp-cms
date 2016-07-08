@@ -13,11 +13,13 @@
 				<p>Page name:</p>
 				<input type='text' value='{{ page.name }}' />
 			</div>
-			<div id='mainImage'>
-				<p>Main image:</p>
-				<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
-				<input type="file" class='hidden' accept="image/*" />
-			</div>
+			{% if page.hasParent %}
+				<div id='mainImage'>
+					<p>Main image:</p>
+					<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
+					<input type="file" class='hidden' accept="image/*" />
+				</div>
+			{% endif %}
 		</div>
 		<div class='contentList'>
 			{% for content in pageContent %}
