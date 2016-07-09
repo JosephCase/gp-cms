@@ -24,7 +24,7 @@
 		<div class='contentList'>
 			{% for content in pageContent %}
 			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
-				  	{% if content.type == 'p' || content.type == 'text' %}
+				  	{% if content.type == 'text' %}
 				  		<textarea draggable="true">{{ content.content }}</textarea>
 				  		{% set sizeRange = [10,11,12,13,14,15,16,17,18,19,20] %}
 				  	{% elseif content.type == 'img' %}
@@ -37,7 +37,7 @@
 				  		{% set sizeRange = [1,2,3,4] %}	  		
 			  		{% endif %}
 
-				  	{% if content.type == 'p' || content.type == 'img' %}
+				  	{% if content.type == 'text' || content.type == 'img' %}
 			  			<span>Size</span>
 				  		<select class='size'>
 				  			{% for size in sizeRange %}
@@ -62,10 +62,6 @@
 		</div>
 		
 		<div class='controls'>
-			<!-- <select>
-				<option value='text'>Text</option>
-			</select> -->
-			<p id="add_p">Add 'p'</p>
 			<p id="add_text">Add text</p>
 			<p id="add_image">Add Images</p>
 			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />

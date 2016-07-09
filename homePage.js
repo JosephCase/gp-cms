@@ -1,50 +1,16 @@
 'use strict';
 
-var mysql = require('mysql'),
-	fs = require("fs"),
-	formidable = require("formidable"),
-	Path = require('path'),
-	swig = require('swig'),
-	im = require('imagemagick');
+var sqlConnection = require('./sqlConnection.js'),
+	swig = require('swig');
 
-var connection;
+var connection = sqlConnection.createConnection();
 var contentDirectory = 'content/';
-
-function createConnection () {
-
-	connection = mysql.createConnection({
-		host: '50.62.209.149',
-		port: '3306',
-		user: 'JosephCase',
-		password: 'Ls962_aj',
-		database: 'giusy_test',
-		multipleStatements: true
-	});	
-
-	connection.connect(function(err) {              // The server is either down
-		if(err) {                                     // or restarting (takes a while sometimes).
-		  console.log('error when connecting to db:', err);
-		  setTimeout(createConnection, 2000); // We introduce a delay before attempting to reconnect,
-		}                                     // to avoid a hot loop, and to allow our node script to
-	});
-
-	connection.on('error', function(err) {
-		console.log('db error', err);
-		if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-		  createConnection();                         // lost due to either server restart, or a
-		} else {                                      // connnection idle timeout (the wait_timeout
-		  throw err;                                  // server variable configures this)
-		}
-	});
-}
-
-createConnection();
 
 // get the page content and send it to the client
 function getPage(response) {
 
 	connection.query(
-		"select parentPage.id section_id, parentPage.name section_name, childPage.id page_id, childPage.name page_name " +
+		"select parentPage.id section_id, parentPage.name section_name, parentPage.isParent, childPage.id page_id, childPage.name page_name " +
 			"from navigation " +
 		    	"INNER JOIN page as parentPage " +
 		        	"on parentPage.id = navigation.page_id " +
@@ -74,7 +40,7 @@ function nestResults(results) {
 	for (var i = 0; i < results.length; i++) {
 		console.log(results[i]);
 		if(!section || results[i].section_id != section.id) {
-			section = {id: results[i].section_id, name: results[i].section_name};
+			section = {id: results[i].section_id, name: results[i].section_name, isParent: results[i].isParent};
 			if(results[i].page_id && results[i].page_name) {
 				section.pages = [{id: results[i].page_id, name: results[i].page_name}];
 			}

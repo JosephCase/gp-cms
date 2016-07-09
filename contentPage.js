@@ -1,50 +1,19 @@
 'use strict';
 
-var mysql = require('mysql'),
-	fs = require("fs"),
+var sqlConnection = require('./sqlConnection.js'),
+	fileController = require('./fileController'),
+	config = require('./config'),
 	formidable = require("formidable"),
 	Path = require('path'),
 	swig = require('swig'),
-	im = require('imagemagick'),
 	url = require("url");
 
-var imageSizes = [1000, 700, 500];
 
 
-
-var connection;
-var contentDirectory = 'content/';
+var connection = sqlConnection.createConnection();
 var pageId = null;
 
-function createConnection () {
 
-	connection = mysql.createConnection({
-		host: '50.62.209.149',
-		port: '3306',
-		user: 'JosephCase',
-		password: 'Ls962_aj',
-		database: 'giusy_test',
-		multipleStatements: true
-	});	
-
-	connection.connect(function(err) {              // The server is either down
-		if(err) {                                     // or restarting (takes a while sometimes).
-		  console.log('error when connecting to db:', err);
-		  setTimeout(createConnection, 2000); // We introduce a delay before attempting to reconnect,
-		}                                     // to avoid a hot loop, and to allow our node script to
-	});
-
-	connection.on('error', function(err) {
-		console.log('db error', err);
-		if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-		  createConnection();                         // lost due to either server restart, or a
-		} else {                                      // connnection idle timeout (the wait_timeout
-		  throw err;                                  // server variable configures this)
-		}
-	});
-}
-
-createConnection();
 
 // get the page content and send it to the client
 function getPage(response, request) {
@@ -66,7 +35,7 @@ function getPage(response, request) {
 				var html = swig.renderFile('templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
-				    contentDirectory: contentDirectory
+				    contentDirectory: config.contentDirectory
 				});
 
 				response.write(html);
@@ -129,10 +98,7 @@ function updatePageDetails(pageName, mainImage) {
 				if(err) {
 					console.log(err)
 				} else {
-					var newPath = contentDirectory + results[0].mainImage_url;
-					fs.rename(mainImage.path, newPath, function() {
-						resizeImage(newPath);
-					});
+					fileController.saveFile(mainImage, results[0].mainImage_url);
 				}
 			}
 		);
@@ -179,7 +145,11 @@ function edit_file(obj, file) {
 		"select content from content where id = ?",
 		[obj.id],
 		function (err, results) {
-			saveFile(file, err, results[0].content);
+			if(err) {
+				console.log(err);
+			} else {
+				fileController.saveFile(file, results[0].content);
+			}
 		}
 	);
 }
@@ -194,7 +164,7 @@ function delete_content(obj) {
 			console.log(err);
 		} else {
 			if(obj.type == 'img' || obj.type == 'video') {
-				deleteFile(obj.data)
+				fileController.deleteFile(obj.data)
 			}
 		}
 	});
@@ -226,54 +196,16 @@ function add_file(obj, file) {
 		"SELECT content from content where id = LAST_INSERT_ID()",
 		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '.mp4')],
 		function (err, results) {
-			saveFile(file, err, results[2][0].content);
+			if(err) {
+				console.log(err);
+			} else {
+				fileController.saveFile(file, results[2][0].content);
+			}
 		}
 	);
 }
 
-function deleteFile(file) {
-	var filePath = contentDirectory + Path.basename(file);
-	fs.unlink(filePath, deleteFile_handle);
-	for (var i = imageSizes.length - 1; i >= 0; i--) {
-		var resizedFilePath = filePath.replace('.jpg', '_x' + imageSizes[i] + '.jpg');
-		fs.unlink(resizedFilePath, deleteFile_handle);	
-	}
-}
 
-function deleteFile_handle(err) {
-	if(err) {
-		console.log("Could't delete file: " + err);
-	}
-}
-
-function saveFile(file, err, fileName) {
-	console.log('//save file')
-	var newPath = contentDirectory + fileName;
-	fs.rename(file.path, newPath, function() {
-		resizeImage(newPath);
-	});
-}
-
-function resizeImage(path) {
-	for (var i = imageSizes.length - 1; i >= 0; i--) {		
-		createNewSize(path, imageSizes[i]);
-	}
-}
-
-function createNewSize(path, size) {
-
-	var newPath = path.replace('.jpg', '_x' + size + '.jpg');
-
-	im.resize({
-	  srcPath: path,
-	  dstPath: newPath,
-	  width:   size,
-	  filter: 'Lanczos'
-	}, function(err, stdout, stderr){
-	  if (err) throw err;
-	  console.log('resized!');
-	});
-} 
 
 function sqlErrorHandler(err, results, fields) {
 	if(err) {
