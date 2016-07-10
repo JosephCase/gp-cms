@@ -6,6 +6,8 @@ var DOM = new function() {
 
 	function pageReadyHandler() {
 		Updater.setPageId(document.getElementById('pageId').value);
+		Updater.setParentPageId(document.getElementById('parentPage_id').value);
+		Updater.setNewPage(document.getElementById('newPage').value);
 		addEventListeners();
 	}
 

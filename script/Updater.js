@@ -2,11 +2,19 @@ var Updater = new function() {
 
 	var formData = new FormData();
 	var oContent = {};
+	var newPage = false;
 
 	//SET THE PAGE ID
 	this.setPageId = function(id) {
 		console.log(id);
 		formData.set('pageId', id);
+	}
+	this.setParentPageId = function(id) {
+		formData.set('parentPage_id', id);
+	}
+	this.setNewPage = function(_newPage) {
+		newPage = _newPage;
+		console.log(newPage);
 	}
 
 	// EDIT PAGE DETAILS
@@ -109,9 +117,16 @@ var Updater = new function() {
 		
 		formData.append('content', JSON.stringify(oContent));
 
+		var url;
+		if(newPage == true) {
+			url = "/savePage";
+		} else {
+			url = "/updatePage";
+		}
+
 		$.ajax({
 		    type: "POST",
-		    url: "/updatePage",
+		    url: url,
 		    // The key needs to match your method's input parameter (case-sensitive).
 		    data: formData,
 			processData: false,

@@ -7,13 +7,17 @@
 		<script type='text/javascript' src='/script/Updater.js'></script>
 	</head>
 	<body>
+
+		<input id='newPage' type='hidden' value={{page.newPage}} />
+		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
 		<input id='pageId' type='hidden' value={{page.id}} />
+		
 		<div id='pageDetails'>
 			<div id='pageName'>
 				<p>Page name:</p>
 				<input type='text' value='{{ page.name }}' />
 			</div>
-			{% if page.hasParent %}
+			{% if page.parentPage_id %}
 				<div id='mainImage'>
 					<p>Main image:</p>
 					<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />

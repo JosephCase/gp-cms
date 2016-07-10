@@ -21,15 +21,13 @@ function getPage(response) {
 			if(err) {
 				console.log(err);
 			} else {
-				console.log(results);
 				var nestedResults = nestResults(results);
-				console.log(nestedResults);
 				var html = swig.renderFile('templates/home.html', {
 					sections: nestedResults
 				});
 				response.write(html);
-				response.end();
 			}
+			response.end();
 		}
 	);
 }
@@ -38,7 +36,6 @@ function nestResults(results) {
 	var nestedResults = [];
 	var section = null;
 	for (var i = 0; i < results.length; i++) {
-		console.log(results[i]);
 		if(!section || results[i].section_id != section.id) {
 			section = {id: results[i].section_id, name: results[i].section_name, isParent: results[i].isParent};
 			if(results[i].page_id && results[i].page_name) {

@@ -21,7 +21,7 @@ function getPage(response, request) {
 	pageId = url.parse(request.url).query;
 
 	connection.query(
-		"SELECT name, mainImage_url, id, parentPage_id hasParent FROM page where id = ?;" +
+		"SELECT name, mainImage_url, id, parentPage_id parentPage_id FROM page where id = ?;" +
 		'SELECT content.* FROM page' + 
 	    	' inner join content' + 
 				' on content.page_id = page.id and page.id = ?' +
@@ -31,7 +31,7 @@ function getPage(response, request) {
 			if(err) {
 				console.log(err);
 			} else {
-
+				results[0][0].newPage = false;
 				var html = swig.renderFile('templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
@@ -215,3 +215,4 @@ function sqlErrorHandler(err, results, fields) {
 
 exports.getPage = getPage;
 exports.updatePage = updatePage;
+exports.updatePageContent = updatePageContent;

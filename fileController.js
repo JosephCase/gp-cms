@@ -19,11 +19,16 @@ function deleteFile_handle(err) {
 }
 
 function saveFile(file, fileName) {
+	console.log(file, fileName);
 	console.log('//save file')
-	var newPath = config.contentDirectory + fileName;
-	fs.rename(file.path, newPath, function() {
-		resizeImage(newPath);
-	});
+	if((typeof fileName) === 'string') {
+		var newPath = config.contentDirectory + fileName;
+		fs.rename(file.path, newPath, function() {
+			resizeImage(newPath);
+		});		
+	} else {
+		console.log("ERROR, file new is not string! " + fileName);
+	}
 }
 
 function resizeImage(path) {
