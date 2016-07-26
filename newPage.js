@@ -45,7 +45,7 @@ function saveNewPage(response, request) {
 		if(error) {
 			console.log(error);
 		} else {
-			if(fields.pageName && (files['mainImage'] || !fields.parentPage_id = 0)) {
+			if(fields.pageName && (files['mainImage'] || fields.parentPage_id == 0)) {
 
 				var pageName = fields.pageName;
 				var pageUrl = pageName.toLowerCase().replace(/ /g, "_");

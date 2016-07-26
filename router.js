@@ -9,6 +9,7 @@ if (typeof String.prototype.endsWith !== 'function') {
 function route(handle, pathname, response, request) {
 	console.log("About to route a request for " + pathname);
 	if (typeof handle[pathname] === 'function') {
+		console.log('request is a page');
 		handle[pathname](response, request);
 	} else {
 		handle['file'](response, pathname);

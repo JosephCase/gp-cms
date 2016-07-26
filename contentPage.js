@@ -18,6 +18,8 @@ var pageId = null;
 // get the page content and send it to the client
 function getPage(response, request) {
 
+	console.log('GET PAGE');
+
 	pageId = url.parse(request.url).query;
 
 	connection.query(
@@ -28,6 +30,7 @@ function getPage(response, request) {
 				' ORDER BY position',
 		[pageId, pageId],
 		function (err, results, fields) {
+			console.log('SQL_DONE');
 			if(err) {
 				console.log(err);
 			} else {
@@ -63,11 +66,12 @@ function updatePage(response, request) {
 		if(error) {
 			console.log(error);
 		} else {
-			updatePageDetails(fields.pageName, files['mainImage']);
-			updatePageContent(oContent, files);		
+			updatePageDetails(fields.pageName, files['mainImage'], response);
+			updatePageContent(oContent, files, response);		
 		}
-
+		
 		response.end();
+
 
 	});
 
@@ -76,7 +80,7 @@ function updatePage(response, request) {
 }
 
 // update the main image and page name (also updates url to_match_page_name)
-function updatePageDetails(pageName, mainImage) {
+function updatePageDetails(pageName, mainImage, response) {
 	// if the page name is set, change it on the server
 	if(pageName) {
 
@@ -107,7 +111,7 @@ function updatePageDetails(pageName, mainImage) {
 }
 
 // update the content within the page
-function updatePageContent(oContent, files) {
+function updatePageContent(oContent, files, response) {
 	for(var propertyName in oContent) {
 		if(oContent[propertyName].action === 'edit') {
 			if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
