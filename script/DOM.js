@@ -274,8 +274,13 @@ var DOM = new function() {
 	}
 
 	// public functions
-	this.refresh = function() {
-		// location.reload(true);
+	this.refresh = function(response) {
+		if(response) {
+			oResponse = JSON.parse(response);
+			window.location.replace(oResponse.location);
+		} else {
+			location.reload(true);
+		}
 	}
 
 

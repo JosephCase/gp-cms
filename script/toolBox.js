@@ -29,11 +29,13 @@ var Toolbox = new function() {
 				console.log($elements);
 				if(startIndex < $elem.index()) {
 					for (var i = $elem.index(); i >= startIndex; i--) {
-						callback($elements.eq(i));
+						var last = (i == startIndex? true : false);
+						callback($elements.eq(i), last);
 					}
 				} else if (startIndex > $elem.index()) {
 					for (var i = startIndex; i >= $elem.index(); i--) {
-						callback($elements.eq(i));
+						var last = (i == $elem.index()? true : false);
+						callback($elements.eq(i), last);
 					}					
 				}
 			}

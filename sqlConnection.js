@@ -1,16 +1,10 @@
-var mysql = require("mysql");
+var mysql = require("mysql"),
+	config = require("./config");
 
 
 function createConnection () {
 
-	var connection = mysql.createConnection({
-		host: '50.62.209.149',
-		port: '3306',
-		user: 'JosephCase',
-		password: 'Ls962_aj',
-		database: 'giusy_test',
-		multipleStatements: true
-	});	
+	var connection = mysql.createConnection(config.databaseLogin);	
 
 	connection.connect(function(err) {              // The server is either down
 		if(err) {                                     // or restarting (takes a while sometimes).

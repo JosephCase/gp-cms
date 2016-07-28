@@ -1,7 +1,8 @@
 'use strict';
 
 var db = require('./sqlConnection.js'),
-	swig = require('swig');
+	swig = require('swig'),
+	formidable = require("formidable");
 
 // var connection = sqlConnection.connection;
 var contentDirectory = 'content/';
@@ -33,6 +34,39 @@ function getPage(response) {
 	);
 }
 
+function reOrderPages(response, request) {
+
+	var form = new formidable.IncomingForm();
+
+	form.parse(request, function(error, fields, files) {
+		
+		if(error) {
+			response.end();
+		} else {
+
+			var sql = '';
+			var params = [];
+
+			for(var propertyName in fields) {
+				sql += 'UPDATE page SET position=? WHERE id=?;'
+				params.push(fields[propertyName].position, fields[propertyName].id)
+			}
+
+			db.connection.query(
+				sql, params,
+				function (err, results, fields) {
+					if(err) {
+						console.log(err);
+					}
+					console
+					response.end();
+				}
+			);		
+		}		
+
+	});	
+}
+
 function nestResults(results) {
 	var nestedResults = [];
 	var section = null;
@@ -53,3 +87,4 @@ function nestResults(results) {
 
 
 exports.getPage = getPage;
+exports.reOrderPages = reOrderPages;

@@ -44,17 +44,20 @@ function saveNewPage(response, request) {
 
 		if(error) {
 			console.log(error);
+			response.end();
 		} else {
+			console.log('HELLLOOOOO ##1')
 			if(fields.pageName && (files['mainImage'] || fields.parentPage_id == 0)) {
+				
+				console.log('HELLLOOOOO ##1')
 
 				var pageName = fields.pageName;
 				var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
 
-				var sql = "INSERT INTO page (name, url, parentPage_id) VALUES(?,?,?); " +
-				"select LAST_INSERT_ID() id; ";
+				var sql = "INSERT INTO page (name, url, parentPage_id) VALUES(?,?,?); ";
 				if(fields.parentPage_id > 0) {
 					sql += "UPDATE page set mainImage_url = CONCAT('mainImage_', LAST_INSERT_ID(), '.jpg') where id = LAST_INSERT_ID(); " +
-					"select mainImage_url from page where id = LAST_INSERT_ID();"
+					"select id, mainImage_url from page where id = LAST_INSERT_ID();"
 				}
 
 				connection.query( 
@@ -66,16 +69,17 @@ function saveNewPage(response, request) {
 						} else {
 							//save the image
 							if(fields.parentPage_id > 0) {
-								fileController.saveFile(files['mainImage'], results[3][0].mainImage_url);
+								fileController.saveFile(files['mainImage'], results[2][0].mainImage_url);
 							}
-							// contentPage.updatePageContent(oContent, files);	
+							// contentPage.updatePageContent(oContent, files);
+							response.write(JSON.stringify({location: '/page?' + results[2][0].id}));
+							response.end();
 						}
 					}
 				);
 			}	
 		}
 
-		response.end();
 
 	});
 }
