@@ -3,19 +3,21 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<link rel="stylesheet" type="text/css" href="css/home.css">
 		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
-		<!--<script type='text/javascript' src='/script/DOM.js'></script>
-		<script type='text/javascript' src='/script/Updater.js'></script> -->
+		<script type='text/javascript' src='/script/toolbox.js'></script>
 		<script type='text/javascript' src='/script/home.js'></script>
 	</head>
 	<body>
 		{% for section in sections %}
 		  	<div class='section' id={{section.id}}>
-				<h5{% if !section.isParent %} class='page' id='{{section.id}}' {% endif %}>{{section.name}}</h5> 
+				<h5{% if !section.isParent %} class='page{% if !section.isParent %} {% if section.visible %}show{% else %}hide{% endif %}{% endif %}' id='{{section.id}}' {% endif %}>{{section.name}}</h5> 
 				{% if section.isParent %} 
 					<p class='add' data-section_id={{section.id}}>Add</p>
-					{% for page in section.pages %}
-						<p id='{{page.id}}' class='page'>{{page.name}}</p>
-					{% endfor %}
+					<div class='children'>
+						{% for page in section.pages %}
+							<p id='{{page.id}}' class='page {% if page.visible %}show{% else %}hide{% endif %}'>{{page.name}}</p>
+						{% endfor %}
+					</div>
+					
 				{% endif %}
 			</div>
 		{% endfor %}

@@ -18,6 +18,15 @@ function attachEventListeners() {
 		adds[i].addEventListener('click', addClickHandler);
 	}
 
+	//reorder functionality
+	var sections = document.getElementsByClassName('section');
+
+	for (var i = sections.length - 1; i >= 0; i--) {
+		if($(sections[i]).find('.children .page').length > 1) {
+			Toolbox.createDraggableList($(sections[i]).find('.children .page'));
+		}
+	}
+
 }
 
 function pageClickHandler() {

@@ -5,21 +5,28 @@
 }
 .section h5 {
 	font-weight: bold;
-	/*border: 1px solid black;*/
-	line-height: 50px;
-	margin: 0;
-	background-color: grey;
+    border-bottom: 2px solid black;
+    line-height: 50px;
+    background-color: #dddddd;
+    margin: 5px;
 }
 .section p {
 	cursor: pointer;
-	background-color: red;
 	margin: 5px;
 	line-height: 40px;
 }
 .section p.add {
-	background-color: pink;
+	background-color: #16e81a;
 }
 
 .page, .add {
 	cursor: pointer;
+}
+
+.hide {
+	border: 1px solid red;
+}
+
+.show {
+	border: 1px solid green;
 }

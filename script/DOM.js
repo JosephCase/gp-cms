@@ -7,6 +7,7 @@ var DOM = new function() {
 	function pageReadyHandler() {
 		Updater.setPageId(document.getElementById('pageId').value);
 		Updater.setParentPageId(document.getElementById('parentPage_id').value);
+		console.log('HELLO?');
 		Updater.setNewPage(document.getElementById('newPage').value);
 		addEventListeners();
 	}
@@ -18,6 +19,8 @@ var DOM = new function() {
 
 		$('#mainImage img').on('click', changeFile);
 		$('#mainImage input').on('change', editFile);
+
+		$('#show').on('click', Updater.editVisible);
 
 		// page content
 		$('.content select, .content textarea').on("change", editHandler);
@@ -41,58 +44,18 @@ var DOM = new function() {
 
 		$('#update').on('click', updateHandler);
 
-		dragDrop();
+		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 		
-		// $('.content').on("dragleave", function() {
-		// 	this.style.paddingBottom = 0;
-		// 	this.style.paddingTop = 0;
-		// });
-
-	}
-
-	function dragDrop() {
-
-		console.log('dragDrop');
-
-		var $elem;
-		var startIndex;
-
-		$('.content').on("dragstart", function() {
-			$elem = $(this);
-			$elem.addClass('moving');
-			startIndex = $elem.index();
-		});
-		$('.content').on("dragover", function(e) {
-			if($elem) {
-				var thisRect = this.getBoundingClientRect();
-				if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {
-					$(this).before($elem);
-				} else {
-					$(this).after($elem);					
-				}				
-			}
-		});
-		$('.content').on('dragend', function() {
-			if($elem) {
-				$elem.removeClass('moving');
-				$elem.children('.dragHandle').on("mousedown", function() {
-					$elem = $(this).parent();
-					$elem.addClass('moving');
-					$elem.remove();
-					$elem = null;
-				});
-				if(startIndex < $elem.index()) {
-					for (var i = $elem.index(); i >= startIndex; i--) {
-						Updater.reOrder($('.content').eq(i));
-					}
-				} else if (startIndex > $elem.index()) {
-					for (var i = startIndex; i >= $elem.index(); i--) {
-						Updater.reOrder($('.content').eq(i));
-					}					
-				}
-			}
+		// if the image src doesn't exist. Replace it with a placeholder image
+		$('img').on('error', function() {
+		    this.onerror = "";
+		    this.src = "/img/placeholder.gif";
+		    return true;
 		})
+
 	}
+
+	
 
 
 
@@ -312,7 +275,7 @@ var DOM = new function() {
 
 	// public functions
 	this.refresh = function() {
-		location.reload(true);
+		// location.reload(true);
 	}
 
 

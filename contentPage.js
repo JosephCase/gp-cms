@@ -1,6 +1,6 @@
 'use strict';
 
-var sqlConnection = require('./sqlConnection.js'),
+var db = require('./sqlConnection.js'),
 	fileController = require('./fileController'),
 	config = require('./config'),
 	formidable = require("formidable"),
@@ -8,12 +8,7 @@ var sqlConnection = require('./sqlConnection.js'),
 	swig = require('swig'),
 	url = require("url");
 
-
-
-var connection = sqlConnection.createConnection();
 var pageId = null;
-
-
 
 // get the page content and send it to the client
 function getPage(response, request) {
@@ -22,8 +17,8 @@ function getPage(response, request) {
 
 	pageId = url.parse(request.url).query;
 
-	connection.query(
-		"SELECT name, mainImage_url, id, parentPage_id parentPage_id FROM page where id = ?;" +
+	db.connection.query(
+		"SELECT name, mainImage_url, id, parentPage_id, visible FROM page where id = ?;" +
 		'SELECT content.* FROM page' + 
 	    	' inner join content' + 
 				' on content.page_id = page.id and page.id = ?' +
@@ -66,7 +61,7 @@ function updatePage(response, request) {
 		if(error) {
 			console.log(error);
 		} else {
-			updatePageDetails(fields.pageName, files['mainImage'], response);
+			updatePageDetails(fields.pageName, files['mainImage'], fields.visible, response);
 			updatePageContent(oContent, files, response);		
 		}
 		
@@ -80,13 +75,13 @@ function updatePage(response, request) {
 }
 
 // update the main image and page name (also updates url to_match_page_name)
-function updatePageDetails(pageName, mainImage, response) {
+function updatePageDetails(pageName, mainImage, visible, response) {
 	// if the page name is set, change it on the server
 	if(pageName) {
 
 		var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
 
-		connection.query( 
+		db.connection.query( 
 			"UPDATE page SET name=?, url=? WHERE id=?",
 			[pageName, pageUrl, pageId],
 			sqlErrorHandler
@@ -95,7 +90,7 @@ function updatePageDetails(pageName, mainImage, response) {
 
 	//if the image has changed, overwrite the old image
 	if(mainImage) {
-		connection.query( 
+		db.connection.query( 
 			"select mainImage_url from page where id = ?",
 			[pageId],
 			function (err, results) {
@@ -105,6 +100,16 @@ function updatePageDetails(pageName, mainImage, response) {
 					fileController.saveFile(mainImage, results[0].mainImage_url);
 				}
 			}
+		);
+	}
+
+	if(visible) {
+		visible = (visible.toLowerCase() === 'true');
+		console.log(visible);
+		db.connection.query( 
+			"UPDATE page SET visible=? WHERE id=?",
+			[visible, pageId],
+			sqlErrorHandler
 		);
 	}
 
@@ -137,7 +142,7 @@ function updatePageContent(oContent, files, response) {
 
 function edit_content(obj) {
 
-	connection.query( 
+	db.connection.query( 
 		"UPDATE content SET content=?, size=?, language=?, position=? WHERE id=?",
 		[obj.data, obj.size, obj.lang, obj.position, obj.id],
 		sqlErrorHandler
@@ -145,7 +150,7 @@ function edit_content(obj) {
 }
 
 function edit_file(obj, file) {
-	connection.query( 
+	db.connection.query( 
 		"select content from content where id = ?",
 		[obj.id],
 		function (err, results) {
@@ -163,7 +168,7 @@ function delete_content(obj) {
 	var query = 'DELETE FROM content' + 
 			" WHERE id=" + obj.id;
 
-	connection.query(query, function(err, results, fields) {
+	db.connection.query(query, function(err, results, fields) {
 		if(err) {
 			console.log(err);
 		} else {
@@ -175,7 +180,7 @@ function delete_content(obj) {
 }
 
 function add_content(obj) {
-	connection.query( 
+	db.connection.query( 
 		'INSERT INTO content' +
 			" VALUES (NULL, ?, ?, ?, ?, ?, ?)",
 		[obj.type, obj.data, obj.size, obj.lang, obj.position, pageId],
@@ -185,7 +190,7 @@ function add_content(obj) {
 
 function reOrder_content(obj) {
 
-	connection.query( 
+	db.connection.query( 
 		'UPDATE content SET position=? WHERE id=?',
 		[obj.position, obj.id],
 		sqlErrorHandler
@@ -194,7 +199,7 @@ function reOrder_content(obj) {
 
 function add_file(obj, file) {
 	console.log('!! ADD IMAGE !!');
-	connection.query( 
+	db.connection.query( 
 		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",

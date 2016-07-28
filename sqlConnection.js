@@ -1,8 +1,9 @@
 var mysql = require("mysql");
 
+
 function createConnection () {
 
-	connection = mysql.createConnection({
+	var connection = mysql.createConnection({
 		host: '50.62.209.149',
 		port: '3306',
 		user: 'JosephCase',
@@ -27,7 +28,19 @@ function createConnection () {
 		}
 	});
 
-	return connection;
+	exports.connection = connection;
+
 }
 
-exports.createConnection = createConnection;
+createConnection();
+
+// var db_connection = 'HELLO';
+// console.log(db_connection);
+// setTimeout(function() {
+// 	db_connection = 'GOODBYE';
+// 	exports.connection = db_connection;
+// 	console.log(db_connection);
+// }, 1000);
+
+// exports.connection = db_connection;
+

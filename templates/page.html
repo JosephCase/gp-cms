@@ -3,6 +3,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<link rel="stylesheet" type="text/css" href="css/page.css">
 		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+		<script type='text/javascript' src='/script/toolbox.js'></script>
 		<script type='text/javascript' src='/script/DOM.js'></script>
 		<script type='text/javascript' src='/script/Updater.js'></script>
 	</head>
@@ -12,6 +13,8 @@
 		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
 		<input id='pageId' type='hidden' value={{page.id}} />
 		
+		<h4><a href="../">< Homepage</a></h4>
+
 		<div id='pageDetails'>
 			<div id='pageName'>
 				<p>Page name:</p>
@@ -24,6 +27,7 @@
 					<input type="file" class='hidden' accept="image/*" />
 				</div>
 			{% endif %}
+			<p>Show: <input id='show' type="checkbox"{% if page.visible %} checked{% endif %}></p>
 		</div>
 		<div class='contentList'>
 			{% for content in pageContent %}

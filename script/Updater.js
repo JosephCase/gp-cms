@@ -13,6 +13,7 @@ var Updater = new function() {
 		formData.set('parentPage_id', id);
 	}
 	this.setNewPage = function(_newPage) {
+		console.log('setNewPage');
 		newPage = _newPage;
 		console.log(newPage);
 	}
@@ -23,6 +24,11 @@ var Updater = new function() {
 	}
 	this.changeMainImage = function(file) {		
 		formData.set('mainImage', file);
+	}
+	this.editVisible = function() {
+		console.log(this.checked);
+		formData.set('visible', this.checked);
+		console.log(formData.get('visible'));
 	}
 
 	/*
@@ -118,11 +124,12 @@ var Updater = new function() {
 		formData.append('content', JSON.stringify(oContent));
 
 		var url;
-		if(newPage == true) {
+		if(newPage == 'true') {
 			url = "/savePage";
 		} else {
 			url = "/updatePage";
 		}
+		console.log(url);
 
 		$.ajax({
 		    type: "POST",

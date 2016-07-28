@@ -12,7 +12,7 @@ var imageSizes = [1000, 700, 500];
 
 
 
-var connection = sqlConnection.createConnection();
+var connection = sqlConnection.connection;
 
 
 // get the page content and send it to the client
