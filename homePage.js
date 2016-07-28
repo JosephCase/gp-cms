@@ -4,11 +4,10 @@ var db = require('./sqlConnection.js'),
 	swig = require('swig'),
 	formidable = require("formidable");
 
-// var connection = sqlConnection.connection;
-var contentDirectory = 'content/';
-
 // get the page content and send it to the client
 function getPage(response) {
+
+	console.log("Get the homepage content")
 
 	db.connection.query(
 		"select parentPage.id section_id, parentPage.name section_name, parentPage.isParent, parentPage.visible sectionVisible, parentPage.position parent_position, " + 
@@ -35,6 +34,8 @@ function getPage(response) {
 }
 
 function reOrderPages(response, request) {
+
+	console.log('Re-order the pages');
 
 	var form = new formidable.IncomingForm();
 
@@ -74,7 +75,7 @@ function nestResults(results) {
 		if(!section || results[i].section_id != section.id) {
 			section = {id: results[i].section_id, name: results[i].section_name,
 				isParent: results[i].isParent, visible: results[i].sectionVisible};
-			if(results[i].page_id && results[i].page_name) {
+			if(results[i].page_id) {
 				section.pages = [{id: results[i].page_id, name: results[i].page_name, visible: results[i].pageVisible}];
 			}
 			nestedResults.push(section);

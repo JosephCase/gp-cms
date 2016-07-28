@@ -3,8 +3,9 @@ var fs = require("fs"),
 	im = require('imagemagick'),
 	config = require('./config');
 
-function deleteFile(file) {
-	var filePath = config.contentDirectory + Path.basename(file);
+function deleteFile(fileName) {
+	console.log('DELETING A FILE');
+	var filePath = config.contentDirectory + fileName;
 	fs.unlink(filePath, deleteFile_handle);
 	for (var i = config.imageSizes.length - 1; i >= 0; i--) {
 		var resizedFilePath = filePath.replace('.jpg', '_x' + config.imageSizes[i] + '.jpg');

@@ -150,14 +150,15 @@ function edit_content(obj) {
 }
 
 function edit_file(obj, file) {
-	db.connection.query( 
+	db.connection.query(
+		"UPDATE content SET size=?, language=?, position=? WHERE id=?;" +
 		"select content from content where id = ?",
-		[obj.id],
+		[obj.size, obj.lang, obj.position, obj.id, obj.id],
 		function (err, results) {
 			if(err) {
 				console.log(err);
-			} else {
-				fileController.saveFile(file, results[0].content);
+			} else if(file) {
+				fileController.saveFile(file, results[1].content);
 			}
 		}
 	);
@@ -165,15 +166,17 @@ function edit_file(obj, file) {
 
 function delete_content(obj) {
 
-	var query = 'DELETE FROM content' + 
-			" WHERE id=" + obj.id;
+	var query = "SELECT content FROM content WHERE id=?;" +
+				"DELETE FROM content WHERE id=?;"
 
-	db.connection.query(query, function(err, results, fields) {
+	db.connection.query(query, 
+		[obj.id, obj.id],
+		function(err, results, fields) {
 		if(err) {
 			console.log(err);
 		} else {
 			if(obj.type == 'img' || obj.type == 'video') {
-				fileController.deleteFile(obj.data)
+				fileController.deleteFile(results[0].content);
 			}
 		}
 	});

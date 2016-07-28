@@ -6,11 +6,12 @@ var Updater = new function() {
 
 	//SET THE PAGE ID
 	this.setPageId = function(id) {
-		console.log(id);
 		formData.set('pageId', id);
+		console.log(id);
 	}
 	this.setParentPageId = function(id) {
 		formData.set('parentPage_id', id);
+		console.log(id);
 	}
 	this.setNewPage = function(_newPage) {
 		console.log('setNewPage');
@@ -119,8 +120,6 @@ var Updater = new function() {
 
 	this.update = function() {
 
-		console.log(oContent);
-		
 		formData.append('content', JSON.stringify(oContent));
 
 		var url;
@@ -129,7 +128,7 @@ var Updater = new function() {
 		} else {
 			url = "/updatePage";
 		}
-		console.log(url);
+		alert(url);
 
 		$.ajax({
 		    type: "POST",

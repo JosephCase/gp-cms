@@ -43,15 +43,15 @@ var DOM = new function() {
 		$('#imageInput, #videoInput').on('change', addNewFilesHandler);
 
 		$('#update').on('click', updateHandler);
-
-		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 		
 		// if the image src doesn't exist. Replace it with a placeholder image
 		$('img').on('error', function() {
 		    this.onerror = "";
 		    this.src = "/img/placeholder.gif";
 		    return true;
-		})
+		});
+
+		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 
 	}
 
@@ -153,7 +153,7 @@ var DOM = new function() {
 
 		scrollTo($newElemt);
 
-		dragDrop();
+		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 
 	}
 
@@ -164,7 +164,8 @@ var DOM = new function() {
 			$newElem = newFileLoadHandler(newFiles[i], i);
 			previewFile($newElem, newFiles[i]);
 		}
-		dragDrop();
+		
+		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 	}
 
 	function previewFile($newElemt, file) {
@@ -187,17 +188,7 @@ var DOM = new function() {
 	    setTimeout(function() {
 	    	reader.readAsDataURL(file);
 	    }, 500);
-
 		
-	}
-
-	function loadFile(file) {
-		console.log(file);
-		var reader = new FileReader();
-		reader.addEventListener('load', function(e) {
-	    	newFileLoadHandler(e, file);
-	    });
-	    reader.readAsDataURL(file);
 	}
 
 	function newFileLoadHandler(file, j) {
@@ -272,6 +263,8 @@ var DOM = new function() {
 	function updateHandler() {
 		Updater.update();
 	}
+
+
 
 	// public functions
 	this.refresh = function(response) {
