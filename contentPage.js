@@ -6,7 +6,8 @@ var db = require('./sqlConnection.js'),
 	formidable = require("formidable"),
 	Path = require('path'),
 	swig = require('swig'),
-	url = require("url");
+	url = require("url"),
+	async = require('async');
 
 var pageId = null;
 
@@ -25,7 +26,6 @@ function getPage(response, request) {
 				' ORDER BY position',
 		[pageId, pageId],
 		function (err, results, fields) {
-			console.log('SQL_DONE');
 			if(err) {
 				console.log(err);
 			} else {
@@ -61,95 +61,134 @@ function updatePage(response, request) {
 		if(error) {
 			console.log(error);
 		} else {
-			updatePageDetails(fields.pageName, files['mainImage'], fields.visible, response);
-			updatePageContent(oContent, files, response);		
+
+			var tasks = [
+				function(callback){
+					updatePageDetails(fields.pageName, files['mainImage'], fields.visible, callback)
+				},
+				function(callback) {
+					updatePageContent(oContent, files, callback);
+				}
+			];
+
+			async.parallel(tasks,
+			// optional callback
+			function(err, results) {
+			    console.log('***DONE DONE DONE***');
+				response.end();
+			});					
 		}
-		
-		response.end();
-
-
 	});
-
-	
-
 }
 
 // update the main image and page name (also updates url to_match_page_name)
-function updatePageDetails(pageName, mainImage, visible, response) {
-	// if the page name is set, change it on the server
-	if(pageName) {
+function updatePageDetails(pageName, mainImage, visible, parent_callback) {
+	
+	// add task to async.parallel to callback once all have been completed
+	var tasks = [function(callback){
+		// if the page name is set, change it on the server
+		if(pageName) {
 
-		var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
-
-		db.connection.query( 
-			"UPDATE page SET name=?, url=? WHERE id=?",
-			[pageName, pageUrl, pageId],
-			sqlErrorHandler
-		);
-	}
-
-	//if the image has changed, overwrite the old image
-	if(mainImage) {
-		db.connection.query( 
-			"select mainImage_url from page where id = ?",
-			[pageId],
-			function (err, results) {
-				if(err) {
-					console.log(err)
-				} else {
-					fileController.saveFile(mainImage, results[0].mainImage_url);
+			var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
+			db.connection.query( 
+				"UPDATE page SET name=?, url=? WHERE id=?",
+				[pageName, pageUrl, pageId],
+				callback
+			)
+		} else {
+			callback();
+		}
+	}, function(callback) {
+		//if the image has changed, overwrite the old image
+		if(mainImage) {
+			db.connection.query( 
+				"select mainImage_url from page where id = ?",
+				[pageId],
+				function (err, results) {
+					if(err) {
+						console.log(err)
+					} else {
+						fileController.saveFile(mainImage, results[0].mainImage_url, callback);
+					}
 				}
-			}
-		);
-	}
+			);
+		} else {
+			callback();
+		}
+	}, function(callback) {
+		if(visible) {
+			visible = (visible.toLowerCase() === 'true');
+			console.log(visible);
+			db.connection.query( 
+				"UPDATE page SET visible=? WHERE id=?",
+				[visible, pageId],
+				callback
+			);
+		} else {
+			callback();
+		}
+	}];
 
-	if(visible) {
-		visible = (visible.toLowerCase() === 'true');
-		console.log(visible);
-		db.connection.query( 
-			"UPDATE page SET visible=? WHERE id=?",
-			[visible, pageId],
-			sqlErrorHandler
-		);
-	}
+	async.parallel(tasks, parent_callback);
 
 }
 
 // update the content within the page
-function updatePageContent(oContent, files, response) {
+function updatePageContent(oContent, files, all_done_callback) {
+
+	var tasks = [];
+
 	for(var propertyName in oContent) {
-		if(oContent[propertyName].action === 'edit') {
-			if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
-				edit_file(oContent[propertyName], files[propertyName]);
+		(function(content, file){
+			if(content.action === 'edit') {
+				if(content.type == 'img' || content.type == 'video') {
+					tasks.push(function(callback) {
+						edit_file(content, file, callback);
+					})
+				} else {
+					tasks.push(function(callback) {
+						edit_content(content, callback);
+					})
+				}
+			} else if(content.action === 'delete') {
+				tasks.push(function(callback) {
+					delete_content(content, callback);
+				})
+			} else if(content.action === 'add') {
+				if(content.type == 'img' || content.type == 'video') {
+					tasks.push(function(callback) {
+						add_file(content, file, callback);
+					})
+				} else {
+					tasks.push(function(callback) {
+						add_content(content, callback);
+					})
+				}
+			} else if(content.action === 'reorder') {
+				tasks.push(function(callback) {
+					reOrder_content(content, callback);
+				})
 			} else {
-				edit_content(oContent[propertyName]);
+				console.log('Unrecognised action: ' + content.action);
 			}
-		} else if(oContent[propertyName].action === 'delete') {
-			delete_content(oContent[propertyName]);
-		} else if(oContent[propertyName].action === 'add') {
-			if(oContent[propertyName].type == 'img' || oContent[propertyName].type == 'video') {
-				add_file(oContent[propertyName], files[propertyName]);
-			} else {
-				add_content(oContent[propertyName]);
-			}
-		} else if(oContent[propertyName].action === 'reorder') {
-			reOrder_content(oContent[propertyName]);
-		} else {
-			console.log('Unrecognised action: ' + oContent[propertyName].action);
-		}
+		}(oContent[propertyName], files[propertyName]));
+
 	}
+
+	async.parallel(tasks, all_done_callback);
+
 }
 
-function edit_content(obj) {
+function edit_content(obj, callback) {
 
 	db.connection.query( 
 		"UPDATE content SET content=?, size=?, language=?, position=? WHERE id=?",
 		[obj.data, obj.size, obj.lang, obj.position, obj.id],
-		sqlErrorHandler
+		callback
 	);	
 }
 
-function edit_file(obj, file) {
+function edit_file(obj, file, callback) {
 	db.connection.query(
 		"UPDATE content SET size=?, language=?, position=? WHERE id=?;" +
 		"select content from content where id = ?",
@@ -157,14 +196,17 @@ function edit_file(obj, file) {
 		function (err, results) {
 			if(err) {
 				console.log(err);
+				callback(err);
 			} else if(file) {
-				fileController.saveFile(file, results[1].content);
+				fileController.saveFile(file, results[1][0].content, callback);
+			} else {
+				callback();
 			}
 		}
 	);
 }
 
-function delete_content(obj) {
+function delete_content(obj, callback) {
 
 	var query = "SELECT content FROM content WHERE id=?;" +
 				"DELETE FROM content WHERE id=?;"
@@ -174,34 +216,39 @@ function delete_content(obj) {
 		function(err, results, fields) {
 		if(err) {
 			console.log(err);
+			callback(err);
 		} else {
+			console.log(results[0][0].content);
 			if(obj.type == 'img' || obj.type == 'video') {
-				fileController.deleteFile(results[0].content);
+				fileController.deleteFile(results[0][0].content, callback);
+			} else {
+				callback();
 			}
 		}
 	});
 }
 
-function add_content(obj) {
+function add_content(obj, callback) {
 	db.connection.query( 
 		'INSERT INTO content' +
 			" VALUES (NULL, ?, ?, ?, ?, ?, ?)",
 		[obj.type, obj.data, obj.size, obj.lang, obj.position, pageId],
-		sqlErrorHandler
+		callback
 	);
 }
 
-function reOrder_content(obj) {
+function reOrder_content(obj, callback) {
 
 	db.connection.query( 
 		'UPDATE content SET position=? WHERE id=?',
 		[obj.position, obj.id],
-		sqlErrorHandler
+		callback
 	);
 }
 
-function add_file(obj, file) {
+function add_file(obj, file, callback) {
 	console.log('!! ADD IMAGE !!');
+	console.log(file.path);
 	db.connection.query( 
 		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
@@ -210,21 +257,13 @@ function add_file(obj, file) {
 		function (err, results) {
 			if(err) {
 				console.log(err);
+				callback(err);
 			} else {
-				fileController.saveFile(file, results[2][0].content);
+				fileController.saveFile(file, results[2][0].content, callback);
 			}
 		}
 	);
 }
 
-
-
-function sqlErrorHandler(err, results, fields) {
-	if(err) {
-		console.log('SQL_ERR: ' + err);
-	}
-}
-
 exports.getPage = getPage;
 exports.updatePage = updatePage;
-exports.updatePageContent = updatePageContent;

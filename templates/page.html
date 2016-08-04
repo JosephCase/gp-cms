@@ -13,22 +13,28 @@
 		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
 		<input id='pageId' type='hidden' value={{page.id}} />
 		
-		<h4><a href="../">< Homepage</a></h4>
+		<div class='controls'>
 
-		<div id='pageDetails'>
-			<div id='pageName'>
-				<p>Page name:</p>
-				<input type='text' value='{{ page.name }}' />
+			<h4><a href="../">< Home</a></h4>
+			<div id='pageDetails'>
+				<input type='text' value='{{ page.name }}' placeholder="Page name" />
+				{% if page.parentPage_id %}
+					<div id='mainImage'>
+						<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
+						<input type="file" class='hidden' accept="image/*" />
+					</div>
+				{% endif %}
+				<p>Show: <input id='show' type="checkbox"{% if page.visible %} checked{% endif %}></p>
 			</div>
-			{% if page.parentPage_id %}
-				<div id='mainImage'>
-					<p>Main image:</p>
-					<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
-					<input type="file" class='hidden' accept="image/*" />
-				</div>
-			{% endif %}
-			<p>Show: <input id='show' type="checkbox"{% if page.visible %} checked{% endif %}></p>
+			<p id="add_text" class='btn'>Add text</p>
+			<p id="add_image" class='btn'>Add Images</p>
+			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
+			<p id="add_video" class='btn'>Add Video</p>
+			<input type="file" id="videoInput" class='hidden' multiple accept="video/mp3" />
+			<p id="update" class='btn'>Save</p>	
 		</div>
+
+		
 		<div class='contentList'>
 			{% for content in pageContent %}
 			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
@@ -69,13 +75,6 @@
 			{% endfor %}
 		</div>
 		
-		<div class='controls'>
-			<p id="add_text">Add text</p>
-			<p id="add_image">Add Images</p>
-			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
-			<p id="add_video">Add Video</p>
-			<input type="file" id="videoInput" class='hidden' multiple accept="video/mp3" />
-			<p id="update">Save</p>	
-		</div>
+
 	</body>
 </html>
