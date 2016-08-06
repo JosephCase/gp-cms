@@ -33,12 +33,12 @@ function attachEventListeners() {
 
 function pageClickHandler() {
 	var pageId = this.id;
-	window.location.href = 'page?' + pageId;
+	window.location.href = 'page?id=' + pageId;
 }
 function addClickHandler() {
 	console.log('click');
 	var parentPage_id = this.getAttribute('data-section_id');
-	window.location.href = 'newPage?' + parentPage_id;
+	window.location.href = 'page?id=0&parent_id=' + parentPage_id;
 }
 function reOrder($element, lastIndex) {
 	// will add a new object with order, or edit if already exists

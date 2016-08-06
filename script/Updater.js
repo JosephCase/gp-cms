@@ -120,15 +120,16 @@ var Updater = new function() {
 
 	this.update = function() {
 
+		console.log(oContent);
+
 		formData.append('content', JSON.stringify(oContent));
 
 		var url;
 		if(newPage == 'true') {
-			url = "/savePage";
+			url = "/createPage";
 		} else {
 			url = "/updatePage";
 		}
-		alert(url);
 
 		$.ajax({
 		    type: "POST",

@@ -7,7 +7,8 @@ var db = require('./sqlConnection.js'),
 	Path = require('path'),
 	swig = require('swig'),
 	url = require("url"),
-	async = require('async');
+	async = require('async'),
+	querystring = require('querystring');
 
 var pageId = null;
 
@@ -16,8 +17,18 @@ function getPage(response, request) {
 
 	console.log('GET PAGE');
 
-	pageId = url.parse(request.url).query;
+	var query = url.parse(request.url).query;
+	pageId = querystring.parse(query)['id'];
 
+	// if the page id is 0 it means it's a new page
+	if(pageId != 0) {
+		getExistingPage(response);
+	} else {
+		getNewPage(response, querystring.parse(query)['parent_id']);
+	}	
+}
+
+function getExistingPage(response) {
 	db.connection.query(
 		"SELECT name, mainImage_url, id, parentPage_id, visible FROM page where id = ?;" +
 		'SELECT content.* FROM page' + 
@@ -41,6 +52,95 @@ function getPage(response, request) {
 			}
 		}
 	);
+}
+
+function getNewPage(response, parent_id) {
+
+	var html = swig.renderFile('templates/page.html', {
+		page: {newPage: true, parentPage_id: parent_id, id: 0},
+	    pageContent: {},
+	    contentDirectory: config.contentDirectory
+	});
+
+	response.write(html);
+	response.end();
+}
+
+//Create a new page
+function createPage(response, request) {
+
+	console.log('//CREATE A NEW PAGE');
+
+	var form = new formidable.IncomingForm();
+	
+	form.multiples = true; // allow multiple files to be uploaded
+
+	form.parse(request, function(error, fields, files) {
+
+		if(error) {
+			console.log(error);
+			response.end();
+		} else {
+
+			var pageName = 'NO NAME';
+			var pageUrl = '';			
+			var visible = (fields.visible && fields.visible.toLowerCase() === 'true');
+
+			if(fields.pageName) {
+				var pageName = fields.pageName;
+				var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
+			}
+
+			var sql = "INSERT INTO page (name, url, parentPage_id, visible) VALUES(?,?,?,?); " +
+				"select LAST_INSERT_ID() id;";
+			if(fields.parentPage_id > 0) {
+				sql += "UPDATE page set mainImage_url = CONCAT('mainImage_', LAST_INSERT_ID(), '.jpg') where id = LAST_INSERT_ID(); " +
+				"select mainImage_url from page where id = LAST_INSERT_ID();"
+			}
+
+			db.connection.query( 
+				sql,
+				[pageName, pageUrl, fields.parentPage_id, visible],
+				function(err, results) {
+					if(err) {
+						console.log('Problem creating new page: ' + err);
+					} else {
+
+						pageId = results[1][0].id;
+
+						// tasks to execture in parallel
+						var tasks = [
+							function(callback){
+								//save the image
+								if(files && files['mainImage']) {
+									fileController.saveFile(files['mainImage'], results[3][0].mainImage_url, callback);
+								}
+							},
+							function(callback) {
+								// update page content
+								if(fields.content) {
+									var oContent = JSON.parse(fields.content);
+									updatePageContent(oContent, files, callback);
+								}
+							}
+						];
+
+						async.parallel(tasks,
+						// optional callback
+						function(err) {
+							//response with the new page url
+							response.write(JSON.stringify({location: '/page?id=' + pageId}));
+							response.end();
+						});	
+
+						
+					}
+				}
+			);
+		}
+
+
+	});
 }
 
 //update the page
@@ -266,4 +366,5 @@ function add_file(obj, file, callback) {
 }
 
 exports.getPage = getPage;
+exports.createPage = createPage;
 exports.updatePage = updatePage;

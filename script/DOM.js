@@ -15,7 +15,7 @@ var DOM = new function() {
 	function addEventListeners() {
 
 		// edit page details
-		$('#pageName input').on('change', Updater.editPageName);
+		$('#pageName').on('change', Updater.editPageName);
 
 		$('#mainImage img').on('click', changeFile);
 		$('#mainImage input').on('change', editFile);
