@@ -63,6 +63,9 @@
 	user-select: none;      
 }
 
+.content.new.new { /*take precedence*/
+	border: 2px dashed green;	
+}
 .content.edited {
 	border: 2px dashed blue;	
 }

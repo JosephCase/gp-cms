@@ -175,7 +175,7 @@ function updatePage(response, request) {
 			// optional callback
 			function(err, results) {
 			    console.log('***DONE DONE DONE***');
-				response.end();
+				// response.end();
 			});					
 		}
 	});
@@ -241,15 +241,9 @@ function updatePageContent(oContent, files, all_done_callback) {
 	for(var propertyName in oContent) {
 		(function(content, file){
 			if(content.action === 'edit') {
-				if(content.type == 'img' || content.type == 'video') {
-					tasks.push(function(callback) {
-						edit_file(content, file, callback);
-					})
-				} else {
-					tasks.push(function(callback) {
-						edit_content(content, callback);
-					})
-				}
+				tasks.push(function(callback) {
+					edit_content(content, file, callback);
+				})
 			} else if(content.action === 'delete') {
 				tasks.push(function(callback) {
 					delete_content(content, callback);
@@ -264,10 +258,6 @@ function updatePageContent(oContent, files, all_done_callback) {
 						add_content(content, callback);
 					})
 				}
-			} else if(content.action === 'reorder') {
-				tasks.push(function(callback) {
-					reOrder_content(content, callback);
-				})
 			} else {
 				console.log('Unrecognised action: ' + content.action);
 			}
@@ -279,20 +269,12 @@ function updatePageContent(oContent, files, all_done_callback) {
 
 }
 
-function edit_content(obj, callback) {
+function edit_content(obj, file, callback) {
 
 	db.connection.query( 
-		"UPDATE content SET content=?, size=?, language=?, position=? WHERE id=?",
-		[obj.data, obj.size, obj.lang, obj.position, obj.id],
-		callback
-	);	
-}
-
-function edit_file(obj, file, callback) {
-	db.connection.query(
-		"UPDATE content SET size=?, language=?, position=? WHERE id=?;" +
-		"select content from content where id = ?",
-		[obj.size, obj.lang, obj.position, obj.id, obj.id],
+		"UPDATE content SET content=COALESCE(?,content), size=COALESCE(?,size), language=COALESCE(?,language), position=COALESCE(?,position) WHERE id=?;" +
+		"select content from content where id = ?", //this is only useful when editing a file
+		[obj.data, obj.size, obj.lang, obj.position, obj.id, obj.id],
 		function (err, results) {
 			if(err) {
 				console.log(err);
@@ -303,7 +285,7 @@ function edit_file(obj, file, callback) {
 				callback();
 			}
 		}
-	);
+	);	
 }
 
 function delete_content(obj, callback) {
@@ -329,19 +311,13 @@ function delete_content(obj, callback) {
 }
 
 function add_content(obj, callback) {
+
+	console.log(obj.type, obj.data, obj.size, obj.lang, obj.position, pageId);
+
 	db.connection.query( 
 		'INSERT INTO content' +
 			" VALUES (NULL, ?, ?, ?, ?, ?, ?)",
 		[obj.type, obj.data, obj.size, obj.lang, obj.position, pageId],
-		callback
-	);
-}
-
-function reOrder_content(obj, callback) {
-
-	db.connection.query( 
-		'UPDATE content SET position=? WHERE id=?',
-		[obj.position, obj.id],
 		callback
 	);
 }

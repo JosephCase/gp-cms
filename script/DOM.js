@@ -7,7 +7,6 @@ var DOM = new function() {
 	function pageReadyHandler() {
 		Updater.setPageId(document.getElementById('pageId').value);
 		Updater.setParentPageId(document.getElementById('parentPage_id').value);
-		console.log('HELLO?');
 		Updater.setNewPage(document.getElementById('newPage').value);
 		addEventListeners();
 	}
@@ -23,12 +22,11 @@ var DOM = new function() {
 		$('#show').on('click', Updater.editVisible);
 
 		// page content
-		$('.content select, .content textarea').on("change", editHandler);
+		$('.content textarea').on("change", editTextHandler);
+		$('.content .size').on("change", editSizeHandler);
+		$('.content .lang').on("change", editLangHandler);
+
 		$('.delete').on("click", deleteHandler);
-		$('#add_p').on('click', function() {
-			console.log('add p');
-			addNewTextHandler('p', this);
-		});
 		$('#add_text').on('click', function() {
 			console.log('add text');
 			addNewTextHandler('text', this);
@@ -63,18 +61,31 @@ var DOM = new function() {
 	EVENT HANDLERS
 	*/
 
-	function editHandler() {
+	function editTextHandler() {
 
-		var $element = $(this).parent();
-		var content = $element.children('textarea').val();
+		var id = $(this).parent().attr('id');
+		var content = $(this).val();
 
-		// check to see if this is newly added item. If it is we don't send it to the server
-		if($element[0].hasAttribute('data-new')) {
-			Updater.addContent($element, content);
-		} else {
-			if(Updater.editContent($element, content)) {
-				$element.addClass('edited');
-			}
+		if(Updater.editText(id, content)) {
+			$(this).parent().addClass('edited');
+		}
+	}
+
+	function editSizeHandler() {
+
+		var id = $(this).parent().attr('id');
+		var size = $(this).val();		
+		if(Updater.editSize(id, size)) {
+			$(this).parent().addClass('edited');
+		}
+	}
+
+	function editLangHandler() {
+
+		var id = $(this).parent().attr('id');
+		var lang = $(this).val();		
+		if(Updater.editLanguage(id, lang)) {
+			$(this).parent().addClass('edited');
 		}
 	}
 
@@ -95,14 +106,10 @@ var DOM = new function() {
 	    reader.onload = function(e) {
 	    	displayElem.src = e.target.result;
 
-	    	console.log($parent);
-
 	    	if($parent.attr('id') == 'mainImage') {
 				Updater.changeMainImage(file);   		
-	    	} else if($parent[0].hasAttribute('data-new')) {
-				Updater.changeNewFile($parent, file);
-			} else {
-	    		Updater.editContent($parent, file);
+	    	} else {
+	    		Updater.editFile($parent.attr('id'), file);
 			}	
 
 	    }; 
@@ -127,15 +134,14 @@ var DOM = new function() {
 		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='" + type + "' draggable='true' data-new class='content'>" +
 			"<textarea></textarea>";
 
-		if(type == 'p') {
-			elemHTML += "<span>Size</span><select class='size'>";
-
-			for (var i = 10; i <= 20; i++) {
-				elemHTML += "<option" + ((i == 16) ? ' selected' : '') + " value='" + i + "'>" + i + "</option>";
-			}
-			elemHTML += "</select>";
+		// size input	
+		elemHTML += "<span>Size</span><select class='size'>";
+		for (var i = 10; i <= 20; i++) {
+			elemHTML += "<option" + ((i == 16) ? ' selected' : '') + " value='" + i + "'>" + i + "</option>";
 		}
+		elemHTML += "</select>";
 
+		// Language input
 		elemHTML = elemHTML + "<span>Language</span><select class='lang'>" +
 			"<option selected value='NULL'>None</option>" +
   			"<option value='eng'>English</option>" +
@@ -148,12 +154,21 @@ var DOM = new function() {
 		$newElemt = $(elemHTML);
 
 		$('.contentList').append($newElemt);
-		$newElemt.children('textarea, select').on("change", editHandler);
+		$newElemt.children('textarea').on("change", editTextHandler);
+
+		$newElemt.children('.size').on("change", editSizeHandler);
+		$newElemt.children('.lang').on("change", editLangHandler);
 		$newElemt.children('.delete').on("click", deleteHandler);
 
 		scrollTo($newElemt);
 
 		Toolbox.createDraggableList($('.content'), Updater.reOrder);
+
+		if(Updater.addText($newElemt.attr('id'), $newElemt.index())) {
+			$newElemt.addClass('new');
+		}
+
+		$newElemt.children('textarea').focus();
 
 	}
 
@@ -161,37 +176,18 @@ var DOM = new function() {
 		var newFiles = this.files;
 		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			$newElem = newFileLoadHandler(newFiles[i], i);
+			$newElem = addNewFileHandler(newFiles[i], i);
+			if(Updater.addFile($newElemt.attr('id'), newFiles[i])) {
+				$newElemt.addClass('new');
+			};			
 			previewFile($newElem, newFiles[i]);
 		}
 		
 		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 	}
 
-	function previewFile($newElemt, file) {
-
-		var reader = new FileReader();
-		reader.addEventListener('load', function(e) {
-
-			$newElemt.children('img, video')[0].src = e.target.result;
-			$newElemt.children('img, video')[0].removeAttribute('poster');
-
-	    	$newElemt.children('select, input').on("change", editHandler);
-
-			$newElemt.children('img, video').on('click', changeFile);
-			$newElemt.children('input').on('change', editFile);
-
-			$newElemt.children('.delete').on("click", deleteHandler);
-
-			Updater.addContent($newElemt, file);
-	    });
-	    setTimeout(function() {
-	    	reader.readAsDataURL(file);
-	    }, 500);
-		
-	}
-
-	function newFileLoadHandler(file, j) {
+	//creates a new element on the page
+	function addNewFileHandler(file, j) {
 
 		console.log(file);
 
@@ -236,6 +232,31 @@ var DOM = new function() {
 		return $newElemt
 
 	}
+
+	//previews the uploaded image on the page
+	function previewFile($newElemt, file) {
+
+		var reader = new FileReader();
+		reader.addEventListener('load', function(e) {
+
+			$newElemt.children('img, video')[0].src = e.target.result;
+			$newElemt.children('img, video')[0].removeAttribute('poster');
+
+			$newElemt.children('img, video').on('click', changeFile);
+			$newElemt.children('input').on('change', editFile);
+			$newElemt.children('.size').on("change", editSizeHandler);
+			$newElemt.children('.lang').on("change", editLangHandler);
+
+			$newElemt.children('.delete').on("click", deleteHandler);
+
+	    });
+	    setTimeout(function() {
+	    	reader.readAsDataURL(file);
+	    }, 500);
+		
+	}
+
+	
 
 	function deleteHandler() {
 

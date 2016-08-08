@@ -30,16 +30,17 @@ var Toolbox = new function() {
 				if(startIndex < $elem.index()) {
 					for (var i = $elem.index(); i >= startIndex; i--) {
 						var last = (i == startIndex? true : false);
-						callback($elements.eq(i), last);
+						callback($elements.eq(i).attr('id'), $elements.eq(i).index(), last);
 					}
 				} else if (startIndex > $elem.index()) {
 					for (var i = startIndex; i >= $elem.index(); i--) {
 						var last = (i == $elem.index()? true : false);
-						callback($elements.eq(i), last);
+						callback($elements.eq(i).attr('id'), $elements.eq(i).index(), last);
 					}					
 				}
 			}
 		});
 	}
 }
+
 

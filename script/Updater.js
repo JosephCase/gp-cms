@@ -35,61 +35,59 @@ var Updater = new function() {
 	/*
 	EDIT CONTENT FUNCTIONS
 	*/
-	this.addContent = function($element, content) {		
-
-		obj = populateContentObject($element, content);
+	this.addFile = function(id, file) {
 		
-		obj.action = 'add';
+		addInstruction(id, 'add');
+		oContent[id].type = 'img';
+		formData.append(id, file);
+		return true;
 
+	}
 
-		// if it's an file, add the file seperately to the form data object
-		if(obj.type == 'img' || obj.type == 'video') {
-			formData.append(obj.id, content);
-			//remove the file from the content object as this will not pass to the server
-			obj.data = null;
-		}
-
-		oContent[obj.id] = obj;
-
+	this.addText = function(id, index) {
+		addInstruction(id, 'add');
+		oContent[id].type = 'text';
+		oContent[id].position = index;
 		return true;
 	}
 
-	this.editContent = function($element, content) {
+	this.editText = function(id, content) {
 
-		console.log('edit');
-
-		obj = populateContentObject($element, content);
-		
-		obj.action = 'edit';
-
-		// if it's an file, add the file seperately to the form data object
-		if(obj.type == 'img' || obj.type == 'video') {
-			formData.append(obj.id, content);
-			//remove the file from the content object as this will not pass to the server
-			obj.data = null;
-		}
-
-		oContent[obj.id] = obj;
+		addInstruction(id, 'edit');
+		oContent[id].data = content;
 
 		return true;
 
 	}
 
-	this.changeNewFile = function($element, file) {
-		var id = $element.attr('id');
-		console.log(id, file);
+	this.editFile = function(id, file) {
+		
+		addInstruction(id, 'edit');
 		formData.set(id, file);
+
+		return true;
+
 	}
 
-	this.reOrder = function($element) {
-		// will add a new object with order, or edit if already exists
-		var id = $element.attr('id')
-		if(!oContent[id]) {
-			oContent[id] = {};
-			oContent[id].id = id;
-			oContent[id].action = 'reorder';
-		}	
-		oContent[id].position = $element.index();
+	this.editSize = function(id, size) {
+
+		addInstruction(id, 'edit');
+		oContent[id].size = size;
+
+		return true;
+	}
+
+	this.editLanguage = function(id, lang) {
+
+		addInstruction(id, 'edit');
+		oContent[id].lang = lang;
+
+		return true;
+	}
+
+	this.reOrder = function(id, index) {
+		addInstruction(id, 'edit');
+		oContent[id].position = index;
 	}
 
 	this.deleteContent = function($element) {
@@ -149,27 +147,12 @@ var Updater = new function() {
 	TOOLS/MISC
 	*/
 
-	function populateContentObject($element, content) {
-		
-		var obj = {};
-		
-		obj.id = $element.attr('id');
-		obj.type = $element.attr('data-type');
-		obj.data = content;
-		obj.position = $element.index();
-
-		if($element.children('.size').length > 0) {
-			obj.size = $element.children('.size').val();
-		} else{
-			obj.size = 0;
+	// add an instruction if it doesn't exist
+	function addInstruction(id, instruction) {
+		if(!oContent[id]) {
+			oContent[id] = {};
+			oContent[id].id = id;
+			oContent[id].action = instruction;
 		}
-		if($element.children('.lang').length > 0) {
-			obj.lang = $element.children('.lang').val();
-		} else {
-			obj.lang = NULL;
-		}
-
-		return obj;
-
 	}
 }

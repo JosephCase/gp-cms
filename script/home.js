@@ -40,14 +40,13 @@ function addClickHandler() {
 	var parentPage_id = this.getAttribute('data-section_id');
 	window.location.href = 'page?id=0&parent_id=' + parentPage_id;
 }
-function reOrder($element, lastIndex) {
+function reOrder(id, index, lastIndex) {
 	// will add a new object with order, or edit if already exists
-	var id = $element.attr('id')
 	if(!oPages[id]) {
 		oPages[id] = {};
 		oPages[id].id = id;
 	}	
-	oPages[id].position = $element.index();
+	oPages[id].position = index;
 	if(lastIndex) {
 		Server.update(oPages);
 	}
