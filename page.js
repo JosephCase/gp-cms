@@ -320,7 +320,7 @@ function delete_content(obj, callback) {
 		} else {
 			console.log(results[0][0].content);
 			if(obj.type == 'img' || obj.type == 'video') {
-				fileController.deleteFile(results[0][0].content, callback);
+				fileController.deleteFile(results[0][0].content, obj.type, callback);
 			} else {
 				callback();
 			}
@@ -347,13 +347,12 @@ function reOrder_content(obj, callback) {
 }
 
 function add_file(obj, file, callback) {
-	console.log('!! ADD IMAGE !!');
-	console.log(file.path);
+	console.log('!! ADD FILE !!');
 	db.connection.query( 
 		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
-		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '.mp4')],
+		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '')],
 		function (err, results) {
 			if(err) {
 				console.log(err);

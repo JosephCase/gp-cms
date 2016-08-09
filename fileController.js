@@ -4,12 +4,23 @@ var fs = require("fs"),
 	config = require('./config'),
 	async = require('async');
 
-function deleteFile(fileName, all_done) {
+var ffmpeg = require('fluent-ffmpeg');
+
+function deleteFile(fileName, type, callback) {
 	console.log('DELETING A FILE');
 	var filePath = config.contentDirectory + fileName;
 
-	console.log(fileName);
+	if(type == 'img') {
+		deleteImage(filePath, callback);
+	} else if(type == 'video') {
+		deleteVideo(filePath, callback);
+	} else {
+		callback('Unrecognized file type');
+	}
 
+}
+
+function deleteImage(filePath, all_done) {
 	var tasks = [function(callback){
 		fs.unlink(filePath, function(err) {
 			if(err) {
@@ -34,24 +45,44 @@ function deleteFile(fileName, all_done) {
 	}
 
 	async.parallel(tasks, all_done);
-
 }
 
-function deleteFile_handle(err, callback) {
-	if(err) {
-		console.log("Could't delete file: " + err);
+function deleteVideo(fileName, all_done) {
+
+	var tasks = [];
+
+	for (var i = config.videoFormats.length - 1; i >= 0; i--) {
+		(function(_i) {
+			tasks.push(function(callback){
+				fs.unlink(fileName + '.' + config.videoFormats[_i].ext, function(err) {
+					if(err) {
+						console.log("Could't delete video: " + err);
+					}
+					callback();
+				});
+			})
+		}(i));	
 	}
-	callback();
+
+	async.parallel(tasks, all_done);
 }
 
 function saveFile(file, fileName, callback) {
 	console.log('//save file');
-	console.log(file.path);
 	if((typeof fileName) === 'string') {
+		
 		var newPath = config.contentDirectory + fileName;
-		fs.rename(file.path, newPath, function() {
-			resizeImage(newPath, callback)
-		});
+
+		//for images
+		if(file.type.indexOf('image/') == 0) {
+			fs.rename(file.path, newPath, function() {
+				resizeImage(newPath, callback)
+			});			
+		} else if(file.type.indexOf('video/') == 0) {
+			saveVideo(file.path, newPath, callback);		
+		} else {
+			callback();
+		}
 	} else {
 		callback();
 		console.log("ERROR, file new is not string! " + fileName);
@@ -88,6 +119,37 @@ function createNewSize(path, size, callback) {
 	  console.log('resized!');
 	  callback();
 	});
+}
+
+function saveVideo(tempPath, path, callback) {
+
+	console.log('//Save Video: ' + path + ' -> ' + path);
+
+	var videoConversion = ffmpeg(tempPath);
+
+	//Video conversion event listeners
+	videoConversion.on('error', function(err, stout, stderr) {
+	    console.log('An error occurred: ' + err.message);
+	    console.log(stderr);
+		callback();
+	})
+	.on('end', function() {
+		console.log('VIDEO SAVED: ' + path);
+		callback();
+	});
+
+	// create the outputs
+	for (var i = 0; i < config.videoFormats.length; i++) {
+		videoConversion.output(path + '.' + config.videoFormats[i].ext)
+			.videoCodec(config.videoFormats[i].codec)	
+			.videoBitrate(2500)
+			.fps(25)
+			.size('?x720')
+			.format(config.videoFormats[i].ext);		
+	}
+
+	// run the conversion
+	videoConversion.run();
 }
 
 exports.saveFile = saveFile;
