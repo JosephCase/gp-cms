@@ -46,7 +46,11 @@
 						<input type="file" class='hidden' accept="image/*" />
 				  		{% set sizeRange = [1,2,3,4] %}
 				  	{% elseif content.type == 'video' %}
-				  		<video controls src='{{ contentDirectory + content.content }}'></video>
+				  		<video controls>
+							{% for format in videoFormats %}
+				  				<source src="{{ contentDirectory + content.content + '.' + format.ext }}" type="video/{{format.ext}}">
+							{% endfor %}
+				  		</video>
 						<input type="file" class='hidden' accept="video/mp3" />
 				  		{% set sizeRange = [1,2,3,4] %}	  		
 			  		{% endif %}

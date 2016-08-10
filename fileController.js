@@ -123,7 +123,7 @@ function createNewSize(path, size, callback) {
 
 function saveVideo(tempPath, path, callback) {
 
-	console.log('//Save Video: ' + path + ' -> ' + path);
+	console.log('//Convert Video: ' + tempPath + ' -> ' + path);
 
 	var videoConversion = ffmpeg(tempPath);
 
@@ -142,7 +142,7 @@ function saveVideo(tempPath, path, callback) {
 	for (var i = 0; i < config.videoFormats.length; i++) {
 		videoConversion.output(path + '.' + config.videoFormats[i].ext)
 			.videoCodec(config.videoFormats[i].codec)	
-			.videoBitrate(2500)
+			.videoBitrate(1500)
 			.fps(25)
 			.size('?x720')
 			.format(config.videoFormats[i].ext);		

@@ -44,7 +44,8 @@ function getExistingPage(response) {
 				var html = swig.renderFile('templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
-				    contentDirectory: config.contentDirectory
+				    contentDirectory: config.contentDirectory,
+				    videoFormats: config.videoFormats
 				});
 
 				response.write(html);
@@ -59,7 +60,8 @@ function getNewPage(response, parent_id) {
 	var html = swig.renderFile('templates/page.html', {
 		page: {newPage: true, parentPage_id: parent_id, id: 0},
 	    pageContent: {},
-	    contentDirectory: config.contentDirectory
+	    contentDirectory: config.contentDirectory,
+		videoFormats: config.videoFormats
 	});
 
 	response.write(html);
