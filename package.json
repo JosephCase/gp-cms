@@ -2,7 +2,8 @@
 	"dependencies": { 
 		"imagemagick": "",
 		"async": "",
-		"querystring": ""
+		"querystring": "",
+		"fluent-ffmpeg": ""
 	}
 }
 

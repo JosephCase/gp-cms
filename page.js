@@ -44,7 +44,8 @@ function getExistingPage(response) {
 				var html = swig.renderFile('templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
-				    contentDirectory: config.contentDirectory
+				    contentDirectory: config.contentDirectory,
+				    videoFormats: config.videoFormats
 				});
 
 				response.write(html);
@@ -59,7 +60,8 @@ function getNewPage(response, parent_id) {
 	var html = swig.renderFile('templates/page.html', {
 		page: {newPage: true, parentPage_id: parent_id, id: 0},
 	    pageContent: {},
-	    contentDirectory: config.contentDirectory
+	    contentDirectory: config.contentDirectory,
+		videoFormats: config.videoFormats
 	});
 
 	response.write(html);
@@ -302,7 +304,7 @@ function delete_content(obj, callback) {
 		} else {
 			console.log(results[0][0].content);
 			if(obj.type == 'img' || obj.type == 'video') {
-				fileController.deleteFile(results[0][0].content, callback);
+				fileController.deleteFile(results[0][0].content, obj.type, callback);
 			} else {
 				callback();
 			}
@@ -323,13 +325,12 @@ function add_content(obj, callback) {
 }
 
 function add_file(obj, file, callback) {
-	console.log('!! ADD IMAGE !!');
-	console.log(file.path);
+	console.log('!! ADD FILE !!');
 	db.connection.query( 
 		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
-		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '.mp4')],
+		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '')],
 		function (err, results) {
 			if(err) {
 				console.log(err);

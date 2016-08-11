@@ -70,6 +70,9 @@ var Server = new function() {
 			processData: false,
 			contentType: "application/json; charset=utf-8",
 		    success: refresh,
+		    timeout: function() {
+		    	alert('timeout!');
+		    },
 		    failure: function(errMsg) {
 		        alert(errMsg);
 		    }
