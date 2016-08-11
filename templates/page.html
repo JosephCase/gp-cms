@@ -30,7 +30,7 @@
 			<p id="add_image" class='btn'>Add Images</p>
 			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
 			<p id="add_video" class='btn'>Add Video</p>
-			<input type="file" id="videoInput" class='hidden' multiple accept="video/mp3" />
+			<input type="file" id="videoInput" class='hidden' multiple accept="video/*" />
 			<p id="update" class='btn'>Save</p>	
 		</div>
 
@@ -38,6 +38,7 @@
 		<div class='contentList'>
 			{% for content in pageContent %}
 			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
+			  		<h1>{{ content.id }}</h1>
 				  	{% if content.type == 'text' %}
 				  		<textarea draggable="true">{{ content.content }}</textarea>
 				  		{% set sizeRange = [10,11,12,13,14,15,16,17,18,19,20] %}
@@ -51,22 +52,20 @@
 				  				<source src="{{ contentDirectory + content.content + '.' + format.ext }}" type="video/{{format.ext}}">
 							{% endfor %}
 				  		</video>
-						<input type="file" class='hidden' accept="video/mp3" />
+						<input type="file" class='hidden' accept="video/*" />
 				  		{% set sizeRange = [1,2,3,4] %}	  		
 			  		{% endif %}
 
-				  	{% if content.type == 'text' || content.type == 'img' %}
-			  			<span>Size</span>
-				  		<select class='size'>
-				  			{% for size in sizeRange %}
-				  				{% if (content.size == 0 && size == 16) || size == content.size %}
-				  					<option selected value='{{ size }}'>{{ size }}</option>
-				  				{% else %}
-				  					<option value='{{ size }}'>{{ size }}</option>
-						  		{% endif %}
-				  			{% endfor %}
-				  		</select>
-			  		{% endif %}
+		  			<span>Size</span>
+			  		<select class='size'>
+			  			{% for size in sizeRange %}
+			  				{% if size == content.size %}
+			  					<option selected value='{{ size }}'>{{ size }}</option>
+			  				{% else %}
+			  					<option value='{{ size }}'>{{ size }}</option>
+					  		{% endif %}
+			  			{% endfor %}
+			  		</select>
 
 			  		<span>Language</span>
 			  		<select class='lang'>

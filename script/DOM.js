@@ -8,7 +8,22 @@ var DOM = new function() {
 		Updater.setPageId(document.getElementById('pageId').value);
 		Updater.setParentPageId(document.getElementById('parentPage_id').value);
 		Updater.setNewPage(document.getElementById('newPage').value);
+
+		// if the image src doesn't exist. Replace it with a placeholder image
+		$('img').on('error', function() {
+		    this.onerror = "";
+		    this.src = "/img/placeholder.gif";
+		    return true;
+		});
+
+		$('img').on('error', function() {
+		    this.onerror = "";
+		    this.wallpaper = "/img/placeholder.gif";
+		    return true;
+		});
+
 		addEventListeners();
+
 	}
 
 	function addEventListeners() {
@@ -21,35 +36,31 @@ var DOM = new function() {
 
 		$('#show').on('click', Updater.editVisible);
 
-		// page content
-		$('.content textarea').on("change", editTextHandler);
-		$('.content .size').on("change", editSizeHandler);
-		$('.content .lang').on("change", editLangHandler);
+		// Add content
+		$('#add_text').on('click', createNewTextElement);
 
-		$('.delete').on("click", deleteHandler);
-		$('#add_text').on('click', function() {
-			console.log('add text');
-			addNewTextHandler('text', this);
-		});
+		$('#add_image').on('click', selectNewImageHandler);
+		$('#add_video').on('click', selectNewVideoHandler);
+		$('#imageInput, #videoInput').on('change', addNewFilesHandler);
+
+		// edit content
+		$('.content textarea').on("change", editTextHandler);
 
 		$('.content img, .content video').on('click', changeFile);
 		$('.content input').on('change', editFile);
 
-		$('#add_image').on('click', selectNewImageHandler);
-		$('#add_video').on('click', selectNewVideoHandler);
+		$('.content .size').on("change", editSizeHandler);
+		$('.content .lang').on("change", editLangHandler);
 
-		$('#imageInput, #videoInput').on('change', addNewFilesHandler);
+		// delete content
+		$('.delete').on("click", deleteHandler);
 
+		//re-order functionality
+		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
+
+
+		//Send all the info to the server
 		$('#update').on('click', updateHandler);
-		
-		// if the image src doesn't exist. Replace it with a placeholder image
-		$('img').on('error', function() {
-		    this.onerror = "";
-		    this.src = "/img/placeholder.gif";
-		    return true;
-		});
-
-		Toolbox.createDraggableList($('.content'), Updater.reOrder);
 
 	}
 
@@ -99,17 +110,25 @@ var DOM = new function() {
 		$parent = $elem.parent();
 
 		var displayElem = $elem.siblings('img, video')[0];
+		displayElem.src = 'img/loading.gif';
+
 		var file = this.files[0];
 
 		var reader = new FileReader();
 	    reader.readAsDataURL(file);
 	    reader.onload = function(e) {
-	    	displayElem.src = e.target.result;
 
 	    	if($parent.attr('id') == 'mainImage') {
 				Updater.changeMainImage(file);   		
-	    	} else {
-	    		Updater.editFile($parent.attr('id'), file);
+	    	} else if(Updater.editFile($parent.attr('id'), file)) {
+		    		setTimeout(function() {		//timeout just to improve user inter
+			    		if($parent.attr('id') == 'img') {
+				    		displayElem.src = e.target.result;
+			    		} else {
+			    			displayElem.src = 'img/video.png';
+			    		}
+		    		}, 1000);	    	
+				$parent.addClass('edited');
 			}	
 
 	    }; 
@@ -127,11 +146,9 @@ var DOM = new function() {
 		e.preventDefault();
 	}
 
-	function addNewTextHandler(type, elem) {
+	function createNewTextElement() {
 
-		console.log(type);
-
-		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='" + type + "' draggable='true' data-new class='content'>" +
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='text' draggable='true' data-new class='content'>" +
 			"<textarea></textarea>";
 
 		// size input	
@@ -162,9 +179,10 @@ var DOM = new function() {
 
 		scrollTo($newElemt);
 
-		Toolbox.createDraggableList($('.content'), Updater.reOrder);
+		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
 
-		if(Updater.addText($newElemt.attr('id'), $newElemt.index())) {
+		if(Updater.addText($newElemt.attr('id'), $newElemt.children('.size').val(), 
+				$newElemt.children('.lang').val(), $newElemt.index())) {
 			$newElemt.addClass('new');
 		}
 
@@ -174,20 +192,28 @@ var DOM = new function() {
 
 	function addNewFilesHandler() {
 		var newFiles = this.files;
-		console.log(newFiles.length);
 		for (var i = 0; i < newFiles.length; i++) {
-			$newElem = addNewFileHandler(newFiles[i], i);
-			if(Updater.addFile($newElemt.attr('id'), newFiles[i])) {
+			$newElem = createNewFileElement(newFiles[i], i);
+			if(Updater.addFile($newElemt.attr('id'), $newElemt.children('.size').val(), 
+				$newElemt.children('.lang').val(), $newElemt.index(), newFiles[i])) {
 				$newElemt.addClass('new');
-			};			
+			};
+
 			previewFile($newElem, newFiles[i]);
+
+			$newElemt.children('img, video').on('click', changeFile);
+			$newElemt.children('input').on('change', editFile);
+			$newElemt.children('.size').on("change", editSizeHandler);
+			$newElemt.children('.lang').on("change", editLangHandler);
+
+			$newElemt.children('.delete').on("click", deleteHandler);
 		}
 		
-		Toolbox.createDraggableList($('.content'), Updater.reOrder);
+		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
 	}
 
 	//creates a new element on the page
-	function addNewFileHandler(file, j) {
+	function createNewFileElement(file, j) {
 
 		console.log(file);
 
@@ -199,7 +225,7 @@ var DOM = new function() {
 			elemHTML += "<input type='file' class='hidden' accept='image/*' />";
 		} else {
 			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new draggable='true' class='content'>";
-			elemHTML += "<video controls poster='img/loading.gif'></video>";
+			elemHTML += "<img src='img/loading.gif' draggable='false' />";
 			elemHTML += "<input type='file' class='hidden' accept='video/*' />";
 		}
 
@@ -223,8 +249,6 @@ var DOM = new function() {
 
 		$('.contentList').append($newElemt);
 
-		console.log(j);
-
 		if(j == 0) {
 			scrollTo($newElemt);
 		}
@@ -236,23 +260,21 @@ var DOM = new function() {
 	//previews the uploaded image on the page
 	function previewFile($newElemt, file) {
 
-		var reader = new FileReader();
-		reader.addEventListener('load', function(e) {
+		if($newElemt.attr('data-type') == 'img') {
+			var reader = new FileReader();
+			reader.addEventListener('load', function(e) {
 
-			$newElemt.children('img, video')[0].src = e.target.result;
-			$newElemt.children('img, video')[0].removeAttribute('poster');
+				$newElemt.children('img')[0].src = e.target.result;
 
-			$newElemt.children('img, video').on('click', changeFile);
-			$newElemt.children('input').on('change', editFile);
-			$newElemt.children('.size').on("change", editSizeHandler);
-			$newElemt.children('.lang').on("change", editLangHandler);
+		    });
+		    setTimeout(function() {
+		    	reader.readAsDataURL(file);
+		    }, 500);
+		} else {
+			$newElemt.children('img')[0].src = 'img/video.png';
+		}
 
-			$newElemt.children('.delete').on("click", deleteHandler);
-
-	    });
-	    setTimeout(function() {
-	    	reader.readAsDataURL(file);
-	    }, 500);
+		
 		
 	}
 
@@ -262,23 +284,18 @@ var DOM = new function() {
 
 		var $element = $(this).parent();
 
-		//if element has already been selected to be deleted 'undelete'
-		if($element.hasClass('deleted')) {
-			if(Updater.removeFromList('elem_' + $element[0].getAttribute('id'))) {
-				$element.removeClass('deleted');
+		// check to see if this is newly added item. If it is we don't send it to the server
+		if($element[0].hasAttribute('data-new')) {
+			if(Updater.toggleDeleteContent($element[0].getAttribute('id'))) {
+				$element.remove();
 			}
-		} else {
-			// check to see if this is newly added item. If it is we don't send it to the server
-			if($element[0].hasAttribute('data-new')) {
-				if(Updater.removeFromList($element[0].getAttribute('id'))) {
-					$element.remove();
-				}
-			} else {		
-				if(Updater.deleteContent($element)) {
-					$element.addClass('deleted');
-				};
-			}			
-		}
+		} else {		
+			if(Updater.toggleDeleteContent($element[0].getAttribute('id'))) {
+				$element.removeClass('edited');
+				$element.toggleClass('deleted');
+			};
+		}	
+
 	}
 
 	function updateHandler() {

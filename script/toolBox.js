@@ -1,20 +1,29 @@
 var Toolbox = new function() {
 	
 
-	this.createDraggableList = function($elements, callback) {
+	this.createDraggableList = function($container, callback) {
+
+		var $elements;
+
+		getElements();
+
+		console.log($elements);
 
 		$elements.attr("draggable", "true");
 
-		console.log('dragDrop');
-
 		var $elem;
 		var startIndex;
+
+		function getElements() {
+			$elements = $container.children();
+		}
 
 		$elements.on("dragstart", function() {
 			$elem = $(this);
 			startIndex = $elem.index();
 		});
 		$elements.on("dragover", function(e) {
+			console.log($elements.index($elem));
 			if($elem && $elements.index($elem) > -1) {
 				var thisRect = this.getBoundingClientRect();
 				if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {
@@ -26,7 +35,6 @@ var Toolbox = new function() {
 		});
 		$elements.on('dragend', function() {
 			if($elem) {
-				console.log($elements);
 				if(startIndex < $elem.index()) {
 					for (var i = $elem.index(); i >= startIndex; i--) {
 						var last = (i == startIndex? true : false);
@@ -38,6 +46,7 @@ var Toolbox = new function() {
 						callback($elements.eq(i).attr('id'), $elements.eq(i).index(), last);
 					}					
 				}
+				getElements();
 			}
 		});
 	}

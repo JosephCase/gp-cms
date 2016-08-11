@@ -177,7 +177,7 @@ function updatePage(response, request) {
 			// optional callback
 			function(err, results) {
 			    console.log('***DONE DONE DONE***');
-				// response.end();
+				response.end();
 			});					
 		}
 	});

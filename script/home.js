@@ -25,7 +25,7 @@ function attachEventListeners() {
 
 	for (var i = sections.length - 1; i >= 0; i--) {
 		if($(sections[i]).find('.children .page').length > 1) {
-			Toolbox.createDraggableList($(sections[i]).find('.children .page'), reOrder);
+			Toolbox.createDraggableList($(sections[i]).children('.children'), reOrder);
 		}
 	}
 

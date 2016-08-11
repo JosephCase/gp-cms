@@ -8,6 +8,10 @@
 	width: 100%;
 }
 
+img {
+	cursor: pointer;
+}
+
 .contentList {
 	width: 75%;
 	float: right;
@@ -60,7 +64,8 @@
 	/*height: 100px;*/
 	overflow: hidden;
 	background-color: beige;
-	user-select: none;      
+	user-select: none;  
+	cursor: pointer;   
 }
 
 .content.new.new { /*take precedence*/
@@ -82,7 +87,6 @@
 	display: block;
 	float: left;
 	vertical-align: middle;
-	cursor: default;
 	user-select: none;           
 	-webkit-user-select: none;   /* Chrome/Safari/Opera */
 	-moz-user-select: none;      /* Firefox */
@@ -105,10 +109,6 @@
 
 img {
 	cursor: pointer;
-}
-
-.content img:hover, .content video:hover {
-	height: 400px;
 }
 
 .content span {
