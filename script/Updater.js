@@ -117,9 +117,6 @@ var Updater = new function() {
 
 	this.toggleDeleteContent = function(id) {
 
-		console.log(id);
-		console.log(oContent[id] && oContent[id].action == 'delete');
-
 		if(oContent[id] && (oContent[id].action == 'delete' || oContent[id].action == 'add')) {	//undelete
 			return removeFromList(id);
 		} else {	//edit or create instruction to be delete

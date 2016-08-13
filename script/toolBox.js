@@ -16,13 +16,11 @@ var DraggableList = function($container, callback) {
 		$elements.attr("draggable", "true");
 
 		$elements.on("dragstart", function() {
-			console.log('DRAG START');
 			$elem = $(this);
 			startIndex = $elem.index();
 		});
 
 		$elements.on("dragover", function(e) {
-			console.log($elem);
 			if($elem && $elements.index($elem) > -1) {
 				var thisRect = this.getBoundingClientRect();
 				if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {

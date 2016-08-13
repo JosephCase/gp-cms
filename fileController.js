@@ -133,9 +133,11 @@ function saveVideo(tempPath, path, callback) {
 	    console.log(stderr);
 		callback();
 	})
+	.on('start', function() {
+		callback();	
+	})
 	.on('end', function() {
 		console.log('VIDEO SAVED: ' + path);
-		callback();
 	});
 
 	// create the outputs

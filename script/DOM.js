@@ -58,6 +58,9 @@ var DOM = new function() {
 
 		//re-order functionality
 		dragList = new DraggableList($('.contentList'), Updater.reOrder);
+		$('.content textarea').on("dragstart", function(e) {
+			e.preventDefault();
+		});
 
 
 		//Send all the info to the server
@@ -172,7 +175,7 @@ var DOM = new function() {
 	function createNewTextElement() {
 
 		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='text' data-new class='content'>" +
-			"<textarea></textarea>";
+			"<textarea  draggable='true'></textarea>";
 
 		// size input	
 		elemHTML += "<span>Size</span><select class='size'>";
@@ -203,6 +206,9 @@ var DOM = new function() {
 		scrollTo($newElemt);
 
 		dragList.update();
+		$newElemt.children('textarea').on("dragstart", function(e) {
+			e.preventDefault();
+		});
 
 		if(Updater.addText($newElemt.attr('id'), $newElemt.children('.size').val(), 
 				$newElemt.children('.lang').val(), $newElemt.index())) {
@@ -322,6 +328,13 @@ var DOM = new function() {
 	}
 
 	function updateHandler() {
+
+		var $loader = $('#loader');
+
+		if ($loader.hasClass('loading')) return false;	//stop double update
+
+		$loader.addClass('loading');
+
 		Updater.update();
 	}
 
