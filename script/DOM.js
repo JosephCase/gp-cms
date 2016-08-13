@@ -3,6 +3,7 @@ var DOM = new function() {
 	document.addEventListener("DOMContentLoaded", pageReadyHandler);
 
 	var newElems = 0;
+	var dragList;
 
 	function pageReadyHandler() {
 		Updater.setPageId(document.getElementById('pageId').value);
@@ -32,7 +33,7 @@ var DOM = new function() {
 		$('#pageName').on('change', Updater.editPageName);
 
 		$('#mainImage img').on('click', changeFile);
-		$('#mainImage input').on('change', editFile);
+		$('#mainImage input').on('change', editMainImage);
 
 		$('#show').on('click', Updater.editVisible);
 
@@ -56,7 +57,7 @@ var DOM = new function() {
 		$('.delete').on("click", deleteHandler);
 
 		//re-order functionality
-		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
+		dragList = new DraggableList($('.contentList'), Updater.reOrder);
 
 
 		//Send all the info to the server
@@ -65,7 +66,18 @@ var DOM = new function() {
 	}
 
 	
+	function editMainImage() {
 
+		var displayElem = $(this).siblings('img')[0];
+		displayElem.src = 'img/loading.gif';
+
+		var file = this.files[0];
+
+		if(Updater.changeMainImage(file)) {
+			previewImg(file, displayElem);
+		}
+
+	}
 
 
 	/*
@@ -118,9 +130,7 @@ var DOM = new function() {
 	    reader.readAsDataURL(file);
 	    reader.onload = function(e) {
 
-	    	if($parent.attr('id') == 'mainImage') {
-				Updater.changeMainImage(file);   		
-	    	} else if(Updater.editFile($parent.attr('id'), file)) {
+	    	if(Updater.editFile($parent.attr('id'), file)) {
 		    		setTimeout(function() {		//timeout just to improve user inter
 			    		if($parent.attr('id') == 'img') {
 				    		displayElem.src = e.target.result;
@@ -131,6 +141,19 @@ var DOM = new function() {
 				$parent.addClass('edited');
 			}	
 
+	    }; 
+	}
+
+	function previewImg(file, displayElem) {
+
+		console.log('previewImg');
+
+		var reader = new FileReader();
+	    reader.readAsDataURL(file);
+	    reader.onload = function(e) {
+    		setTimeout(function() {		//timeout just to improve UX	    		
+		    	displayElem.src = e.target.result;
+    		}, 1000);	  	
 	    }; 
 	}
 
@@ -148,7 +171,7 @@ var DOM = new function() {
 
 	function createNewTextElement() {
 
-		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='text' draggable='true' data-new class='content'>" +
+		var elemHTML = "<div id='new_" + (newElems++) + "' data-type='text' data-new class='content'>" +
 			"<textarea></textarea>";
 
 		// size input	
@@ -179,7 +202,7 @@ var DOM = new function() {
 
 		scrollTo($newElemt);
 
-		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
+		dragList.update();
 
 		if(Updater.addText($newElemt.attr('id'), $newElemt.children('.size').val(), 
 				$newElemt.children('.lang').val(), $newElemt.index())) {
@@ -209,7 +232,7 @@ var DOM = new function() {
 			$newElemt.children('.delete').on("click", deleteHandler);
 		}
 		
-		Toolbox.createDraggableList($('.contentList'), Updater.reOrder);
+		dragList.update();
 	}
 
 	//creates a new element on the page

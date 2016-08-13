@@ -23,8 +23,9 @@ var Updater = new function() {
 	this.editPageName = function() {
 		formData.set('pageName', this.value);
 	}
-	this.changeMainImage = function(file) {		
+	this.changeMainImage = function(file) {
 		formData.set('mainImage', file);
+		return true;
 	}
 	this.editVisible = function() {
 		console.log(this.checked);
