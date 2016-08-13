@@ -319,7 +319,7 @@ var DOM = new function() {
 				$element.remove();
 			}
 		} else {		
-			if(Updater.toggleDeleteContent($element[0].getAttribute('id'))) {
+			if(Updater.toggleDeleteContent($element[0].getAttribute('id'), $element[0].getAttribute('data-type'))) {
 				$element.removeClass('edited');
 				$element.toggleClass('deleted');
 			};

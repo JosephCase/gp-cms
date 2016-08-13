@@ -6,6 +6,8 @@ var fs = require("fs"),
 
 var ffmpeg = require('fluent-ffmpeg');
 
+var convertList = {}; //list of videos being converted atm
+
 function deleteFile(fileName, type, callback) {
 	console.log('DELETING A FILE');
 	var filePath = config.contentDirectory + fileName;
@@ -64,7 +66,17 @@ function deleteVideo(fileName, all_done) {
 		}(i));	
 	}
 
-	async.parallel(tasks, all_done);
+	//if the video is still being converted we need to stop
+	if(convertList[fileName]) {
+		convertList[fileName].on('error', function() {
+			console.log('// ADDITIONAL CALLBACK * * *');
+			async.parallel(tasks, all_done);
+		});
+		convertList[fileName].kill();
+		delete convertList[fileName];
+	} else {
+		async.parallel(tasks, all_done);		
+	}
 }
 
 function saveFile(file, fileName, callback) {
@@ -125,24 +137,25 @@ function saveVideo(tempPath, path, callback) {
 
 	console.log('//Convert Video: ' + tempPath + ' -> ' + path);
 
-	var videoConversion = ffmpeg(tempPath);
+	convertList[path] = ffmpeg(tempPath);
 
 	//Video conversion event listeners
-	videoConversion.on('error', function(err, stout, stderr) {
-	    console.log('An error occurred: ' + err.message);
-	    console.log(stderr);
-		callback();
+	convertList[path].on('error', function(err, stout, stderr) {
+	    if(err != 'Error: ffmpeg was killed with signal SIGKILL') {
+			callback();
+	    }
 	})
 	.on('start', function() {
 		callback();	
 	})
 	.on('end', function() {
 		console.log('VIDEO SAVED: ' + path);
+		delete convertList[path];
 	});
 
 	// create the outputs
 	for (var i = 0; i < config.videoFormats.length; i++) {
-		videoConversion.output(path + '.' + config.videoFormats[i].ext)
+		convertList[path].output(path + '.' + config.videoFormats[i].ext)
 			.videoCodec(config.videoFormats[i].codec)	
 			.videoBitrate(1500)
 			.fps(25)
@@ -151,7 +164,7 @@ function saveVideo(tempPath, path, callback) {
 	}
 
 	// run the conversion
-	videoConversion.run();
+	convertList[path].run();
 }
 
 exports.saveFile = saveFile;

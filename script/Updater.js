@@ -115,12 +115,13 @@ var Updater = new function() {
 		oContent[id].position = index;
 	}
 
-	this.toggleDeleteContent = function(id) {
+	this.toggleDeleteContent = function(id, type) {
 
 		if(oContent[id] && (oContent[id].action == 'delete' || oContent[id].action == 'add')) {	//undelete
 			return removeFromList(id);
 		} else {	//edit or create instruction to be delete
 			addInstruction(id, 'delete', true);	 //overwrites the previous instuction
+			oContent[id].type = type;
 			return true;
 		}
 

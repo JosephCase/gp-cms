@@ -238,6 +238,8 @@ function updatePageDetails(pageName, mainImage, visible, parent_callback) {
 // update the content within the page
 function updatePageContent(oContent, files, all_done_callback) {
 
+	console.log(oContent);
+
 	var tasks = [];
 
 	for(var propertyName in oContent) {
@@ -302,7 +304,7 @@ function delete_content(obj, callback) {
 			console.log(err);
 			callback(err);
 		} else {
-			console.log(results[0][0].content);
+			console.log(obj.type);
 			if(obj.type == 'img' || obj.type == 'video') {
 				fileController.deleteFile(results[0][0].content, obj.type, callback);
 			} else {
