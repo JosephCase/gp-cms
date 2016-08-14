@@ -3,7 +3,8 @@
 		"imagemagick": "",
 		"async": "",
 		"querystring": "",
-		"fluent-ffmpeg": ""
+		"fluent-ffmpeg": "",
+		"express": ""
 	}
 }
 

@@ -151,8 +151,8 @@ var Updater = new function() {
 			processData: false,
 			contentType: false,
 		    success: DOM.refresh,
-		    failure: function(errMsg) {
-		        alert(errMsg);
+		    error: function(errMsg) {
+		        alert('There was a problem updating this page. Please contact your system admin. [' + errMsg + ']');
 		    }
 		});
 	}

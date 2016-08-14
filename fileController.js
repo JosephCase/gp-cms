@@ -69,7 +69,6 @@ function deleteVideo(fileName, all_done) {
 	//if the video is still being converted we need to stop
 	if(convertList[fileName]) {
 		convertList[fileName].on('error', function() {
-			console.log('// ADDITIONAL CALLBACK * * *');
 			async.parallel(tasks, all_done);
 		});
 		convertList[fileName].kill();
@@ -142,7 +141,7 @@ function saveVideo(tempPath, path, callback) {
 	//Video conversion event listeners
 	convertList[path].on('error', function(err, stout, stderr) {
 	    if(err != 'Error: ffmpeg was killed with signal SIGKILL') {
-			callback();
+			callback(err);
 	    }
 	})
 	.on('start', function() {

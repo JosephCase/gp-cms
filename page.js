@@ -177,6 +177,10 @@ function updatePage(response, request) {
 			// optional callback
 			function(err, results) {
 			    console.log('***DONE DONE DONE***');
+			    if(err) {
+			    	response.statusCode = 500;
+			    	response.write(err);
+			    }
 				response.end();
 			});					
 		}
