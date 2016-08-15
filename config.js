@@ -1,5 +1,5 @@
 exports.contentDirectory = 'content/';
-exports.imageSizes = [1000, 700, 500];
+exports.imageSizes = [1400, 1000, 700, 500];
 exports.videoFormats = [{ext: 'mp4', codec: 'libx264'}, {ext: 'webm', codec: 'libvpx'}];
 exports.databaseLogin = {
 	host: '50.62.209.149',
