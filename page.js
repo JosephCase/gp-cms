@@ -13,7 +13,7 @@ var db = require('./sqlConnection.js'),
 var pageId = null;
 
 // get the page content and send it to the client
-function getPage(response, request) {
+function getPage(request, response) {
 
 	console.log('GET PAGE');
 
@@ -69,7 +69,7 @@ function getNewPage(response, parent_id) {
 }
 
 //Create a new page
-function createPage(response, request) {
+function createPage(request, response) {
 
 	console.log('//CREATE A NEW PAGE');
 
@@ -146,7 +146,7 @@ function createPage(response, request) {
 }
 
 //update the page
-function updatePage(response, request) {
+function updatePage(request, response) {
 
 	var form = new formidable.IncomingForm();
 

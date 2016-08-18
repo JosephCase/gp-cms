@@ -40,7 +40,7 @@
 			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
 				  	{% if content.type == 'text' %}
 				  		<textarea draggable="true">{{ content.content }}</textarea>
-				  		{% set sizeRange = [10,11,12,13,14,15,16,17,18,19,20] %}
+				  		{% set sizeRange = [12,13,14,15,16,17,18] %}
 				  	{% elseif content.type == 'img' %}
 				  		<img src='{{ contentDirectory + content.content }}' draggable="false"  />
 						<input type="file" class='hidden' accept="image/*" />

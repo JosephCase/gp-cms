@@ -33,7 +33,7 @@ function getPage(response) {
 	);
 }
 
-function reOrderPages(response, request) {
+function reOrderPages(request, response) {
 
 	console.log('Re-order the pages');
 

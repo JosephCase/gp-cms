@@ -4,7 +4,8 @@
 		"async": "",
 		"querystring": "",
 		"fluent-ffmpeg": "",
-		"express": ""
+		"express": "",
+		"cookie-parser": ""
 	}
 }
 
