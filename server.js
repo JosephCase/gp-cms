@@ -76,7 +76,7 @@ app.patch("/page", function(req, res) {
 var server = app.listen(8888, function () {
 
 	console.log("Express Server has started");
-	// server.timeout = 0; Not needed as response no longer waits for video
+	server.timeout = 300000;
 
 });
 

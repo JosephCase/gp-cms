@@ -121,17 +121,14 @@ var Server = new function() {
 			if(instructions[id].oldAction) {
 				//Work around so that elements that have been edited -> delete -> undeleted will revent back to edit
 				instructions[id].action = instructions[id].oldAction;
-				delete instructions.oldAction;
+				delete instructions[id].oldAction;
 				return true;
 			} else {
 				formData.delete(id);	//if there is a saved file, delete it
 				return removeFromList(id);
 			}
 		} else {	//edit or set instruction to be delete
-			if(instructions[id]) {
-				instructions[id].oldAction = instructions[id].action;
-			}
-			addInstruction(id, 'delete');	 //overwrites the previous instuction
+			addInstruction(id, 'delete', true);	 //overwrites the previous instuction
 			instructions[id].type = type;
 			return true;
 		}
@@ -175,12 +172,15 @@ var Server = new function() {
 	*/
 
 	// add an instruction if it doesn't exist
-	function addInstruction(id, instruction) {
+	function addInstruction(id, instruction, overwrite) {
 		if(!instructions[id]) {
 			instructions[id] = {};
 			instructions[id].id = id;
+			instructions[id].action = instruction;
+		} else if(overwrite) {
+			instructions[id].oldAction = instructions[id].action;	//if ovewriting, remember what the old action was
+			instructions[id].action = instruction;
 		}
-		instructions[id].action = instruction;
 	}
 
 	// remove an instruction from the instructions

@@ -1,3 +1,5 @@
+
+
 #pageDetails {
 	margin-bottom: 40px;
 }
@@ -11,6 +13,9 @@
 img {
 	cursor: pointer;
 }
+img:hover {
+	opacity: 0.5;
+}
 
 .contentList {
 	width: 75%;
@@ -23,7 +28,7 @@ img {
 	top: 0;
 	width: 24%;
 	height: 100%;
-	background-color: #b2d6ab;
+	background-color: #abc9d6;
 	padding: 0 28px;
 	box-sizing: border-box;
 }
@@ -52,6 +57,8 @@ img {
 	bottom: 20px;
 	left: 28px;
 	right: 28px;
+	background-color: #365d6d;
+	color: white;
 }
 
 .hidden.hidden {
@@ -59,19 +66,19 @@ img {
 }
 
 .content {
-	width: 95%;
-	margin: 20px auto;
-	/*height: 100px;*/
-	overflow: hidden;
-	background-color: beige;
-	user-select: none;  
-	cursor: pointer;   
+    width: 95%;
+    margin: 20px auto;
+    overflow: hidden;
+	border: 2px solid #d6d6d6;
+    background-color: #f1f1f1;
+    user-select: none;
+    cursor: pointer; 
 }
 
 .content.edited {
-	border: 2px dashed blue;	
+	border: 2px dashed #1565C0;	
 }
-.content.new { /*take precedence*/
+.content.new {
 	border: 2px dashed green;	
 }
 .content.deleted {
