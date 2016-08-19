@@ -68,11 +68,11 @@ img {
 	cursor: pointer;   
 }
 
-.content.new.new { /*take precedence*/
-	border: 2px dashed green;	
-}
 .content.edited {
 	border: 2px dashed blue;	
+}
+.content.new { /*take precedence*/
+	border: 2px dashed green;	
 }
 .content.deleted {
 	border: 2px dashed red;	

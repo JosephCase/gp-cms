@@ -22,8 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			$.post( "/login", { username: username, password: password }, function( data ) {
 				if(data === 'success') {
 					window.location.replace('/');
-				} else {
+				} else if (data === 'failure') {
 					loginFailed();
+				} else {
+					alert('ERROR: There was a problem with your login. Please contact support.')
 				}
 			});
 		}

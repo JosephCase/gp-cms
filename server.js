@@ -9,6 +9,7 @@ var app = express();
 
 //static files
 app.use(express.static('static'));
+app.use('/content', express.static('content'));
 
 //session check
 app.use(cookieParser("'verde_speranza'"));
@@ -21,8 +22,6 @@ app.post("/login", function(req, res) {
 		if(error) {
 			res.write('error');
 		} else {
-
-			console.log(fields)
 
 			if(fields.username == config.login.username && fields.password == config.login.password) {
 				res.cookie('user', 'giusy', { signed: true });

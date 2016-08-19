@@ -179,7 +179,7 @@ function updatePage(request, response) {
 			    console.log('***DONE DONE DONE***');
 			    if(err) {
 			    	response.statusCode = 500;
-			    	response.write(err);
+			    	response.write(err.message);
 			    }
 				response.end();
 			});					

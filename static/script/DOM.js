@@ -6,9 +6,9 @@ var DOM = new function() {
 	var dragList;
 
 	function pageReadyHandler() {
-		Updater.setPageId(document.getElementById('pageId').value);
-		Updater.setParentPageId(document.getElementById('parentPage_id').value);
-		Updater.setNewPage(document.getElementById('newPage').value);
+		Server.setPageId(document.getElementById('pageId').value);
+		Server.setParentPageId(document.getElementById('parentPage_id').value);
+		Server.setNewPage(document.getElementById('newPage').value);
 
 		// if the image src doesn't exist. Replace it with a placeholder image
 		$('img').on('error', function() {
@@ -30,12 +30,12 @@ var DOM = new function() {
 	function addEventListeners() {
 
 		// edit page details
-		$('#pageName').on('change', Updater.editPageName);
+		$('#pageName').on('change', Server.editPageName);
 
 		$('#mainImage img').on('click', changeFile);
 		$('#mainImage input').on('change', editMainImage);
 
-		$('#show').on('click', Updater.editVisible);
+		$('#show').on('click', Server.editVisible);
 
 		// Add content
 		$('#add_text').on('click', createNewTextElement);
@@ -57,7 +57,7 @@ var DOM = new function() {
 		$('.delete').on("click", deleteHandler);
 
 		//re-order functionality
-		dragList = new DraggableList($('.contentList'), Updater.reOrder);
+		dragList = new DraggableList($('.contentList'), Server.reOrder);
 		$('.content textarea').on("dragstart", function(e) {
 			e.preventDefault();
 		});
@@ -76,7 +76,7 @@ var DOM = new function() {
 
 		var file = this.files[0];
 
-		if(Updater.changeMainImage(file)) {
+		if(Server.changeMainImage(file)) {
 			previewImg(file, displayElem);
 		}
 
@@ -92,7 +92,7 @@ var DOM = new function() {
 		var id = $(this).parent().attr('id');
 		var content = $(this).val();
 
-		if(Updater.editText(id, content)) {
+		if(Server.editText(id, content)) {
 			$(this).parent().addClass('edited');
 		}
 	}
@@ -101,7 +101,7 @@ var DOM = new function() {
 
 		var id = $(this).parent().attr('id');
 		var size = $(this).val();		
-		if(Updater.editSize(id, size)) {
+		if(Server.editSize(id, size)) {
 			$(this).parent().addClass('edited');
 		}
 	}
@@ -110,7 +110,7 @@ var DOM = new function() {
 
 		var id = $(this).parent().attr('id');
 		var lang = $(this).val();		
-		if(Updater.editLanguage(id, lang)) {
+		if(Server.editLanguage(id, lang)) {
 			$(this).parent().addClass('edited');
 		}
 	}
@@ -133,9 +133,9 @@ var DOM = new function() {
 	    reader.readAsDataURL(file);
 	    reader.onload = function(e) {
 
-	    	if(Updater.editFile($parent.attr('id'), file)) {
+	    	if(Server.editFile($parent.attr('id'), file)) {
 		    		setTimeout(function() {		//timeout just to improve user inter
-			    		if($parent.attr('id') == 'img') {
+			    		if($parent.attr('data-type') == 'img') {
 				    		displayElem.src = e.target.result;
 			    		} else {
 			    			displayElem.src = 'img/video.png';
@@ -210,7 +210,7 @@ var DOM = new function() {
 			e.preventDefault();
 		});
 
-		if(Updater.addText($newElemt.attr('id'), $newElemt.children('.size').val(), 
+		if(Server.addText($newElemt.attr('id'), $newElemt.children('.size').val(), 
 				$newElemt.children('.lang').val(), $newElemt.index())) {
 			$newElemt.addClass('new');
 		}
@@ -223,7 +223,7 @@ var DOM = new function() {
 		var newFiles = this.files;
 		for (var i = 0; i < newFiles.length; i++) {
 			$newElem = createNewFileElement(newFiles[i], i);
-			if(Updater.addFile($newElemt.attr('id'), $newElemt.children('.size').val(), 
+			if(Server.addFile($newElemt.attr('id'), $newElemt.children('.size').val(), 
 				$newElemt.children('.lang').val(), $newElemt.index(), newFiles[i])) {
 				$newElemt.addClass('new');
 			};
@@ -315,12 +315,11 @@ var DOM = new function() {
 
 		// check to see if this is newly added item. If it is we don't send it to the server
 		if($element[0].hasAttribute('data-new')) {
-			if(Updater.toggleDeleteContent($element[0].getAttribute('id'))) {
+			if(Server.toggleDeleteContent($element[0].getAttribute('id'))) {
 				$element.remove();
 			}
 		} else {		
-			if(Updater.toggleDeleteContent($element[0].getAttribute('id'), $element[0].getAttribute('data-type'))) {
-				$element.removeClass('edited');
+			if(Server.toggleDeleteContent($element[0].getAttribute('id'), $element[0].getAttribute('data-type'))) {
 				$element.toggleClass('deleted');
 			};
 		}	
@@ -335,7 +334,7 @@ var DOM = new function() {
 
 		$loader.addClass('loading');
 
-		Updater.update();
+		Server.update();
 	}
 
 

@@ -112,24 +112,38 @@ function resizeImage(newPath, all_done_callback) {
 	async.parallel(tasks, all_done_callback);
 }
 
-function createNewSize(path, size, callback) {
+function createNewSize(path, newSize, callback) {
 
 	console.log('//RESIZE');
 
-	var newPath = path.replace('.jpg', '_x' + size + '.jpg');
+	var newPath = path.replace('.jpg', '_x' + newSize + '.jpg');
 
-	console.log(path, newPath);
+	im.identify(path, function(err, features){
+		if (err) {
+			console.log(err);
+			callback('PROBLEM WITH UPLOADED IMAGE');
+		} else {
 
-	im.resize({
-	  srcPath: path,
-	  dstPath: newPath,
-	  width:   size,
-	  filter: 'Lanczos'
-	}, function(err, stdout, stderr){
-	  if (err) throw err;
-	  console.log('resized!');
-	  callback();
+			newSize = (newSize < features.width) ? newSize : features.width;	//do not make the image larger
+
+			im.resize({
+				srcPath: path,
+				dstPath: newPath,
+				width:   newSize,
+				filter: 'Lanczos'
+			}, function(err, stdout, stderr){
+				if (err) {
+					console.log('RESIZE ERROR');
+					callback('UNABLE TO RESIZE IMAGE');
+				} else {
+				  console.log('resized!');
+				  callback();			
+				}
+			});
+		}
 	});
+
+	
 }
 
 function saveVideo(tempPath, path, callback) {
