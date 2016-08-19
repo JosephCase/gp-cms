@@ -1,7 +1,9 @@
 var express = require('express');
 var homePage = require("./homePage");
 var page = require("./page");
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
+var config = require('./config');
+var formidable = require("formidable");
 
 var app = express();
 
@@ -12,17 +14,35 @@ app.use(express.static('static'));
 app.use(cookieParser("'verde_speranza'"));
 
 app.post("/login", function(req, res) {
-	console.log('LOGGED IN!');
-	res.cookie('user', 'giusy', { signed: true });
-	res.write('success');
-	res.end();
+	
+	var form = new formidable.IncomingForm();
+
+	form.parse(req, function(error, fields) {
+		if(error) {
+			res.write('error');
+		} else {
+
+			console.log(fields)
+
+			if(fields.username == config.login.username && fields.password == config.login.password) {
+				res.cookie('user', 'giusy', { signed: true });
+				res.write('success');		
+			} else {
+				res.write('failure');
+			}
+
+		}
+
+		res.end();
+
+	});
+
 });
 
 var sessionChecker = function (req, res, next) {
 
 	console.log('Check session for ' + req.url);
 
-	console.log(req.signedCookies);
 	if(req.signedCookies.user == 'giusy') {
 		next();
 	} else {
@@ -37,7 +57,6 @@ app.use(sessionChecker);
 
 // Homepage
 app.get("/", function(req, res) {
-	console.log('GET ME');
 	homePage.getPage(res);
 });
 app.put("/", function(req, res) {
