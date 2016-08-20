@@ -341,6 +341,7 @@ var DOM = new function() {
 
 	// public functions
 	this.refresh = function(response) {
+		alert(response);
 		if(response) {
 			oResponse = JSON.parse(response);
 			window.location.replace(oResponse.location);

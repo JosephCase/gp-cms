@@ -86,7 +86,7 @@ function createPage(request, response) {
 
 			var pageName = 'NO NAME';
 			var pageUrl = '';			
-			var visible = (fields.visible && fields.visible.toLowerCase() === 'true');
+			var visible = (fields.visible && fields.visible.toLowerCase() === 'true') ? true : false;
 
 			if(fields.pageName) {
 				var pageName = fields.pageName;
@@ -116,6 +116,8 @@ function createPage(request, response) {
 								//save the image
 								if(files && files['mainImage']) {
 									fileController.saveFile(files['mainImage'], results[3][0].mainImage_url, callback);
+								} else {
+									callback();
 								}
 							},
 							function(callback) {
@@ -123,6 +125,8 @@ function createPage(request, response) {
 								if(fields.content) {
 									var oContent = JSON.parse(fields.content);
 									updatePageContent(oContent, files, callback);
+								} else {
+									callback();
 								}
 							}
 						];
