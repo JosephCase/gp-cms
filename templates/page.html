@@ -19,6 +19,7 @@
 			<h4><a href="../">< Home</a></h4>
 			<div id='pageDetails'>
 				<input id='pageName' type='text' value='{{ page.name }}' placeholder="Page name" />
+				<p class='errorMsg'>Please enter a page name</p>
 				{% if page.parentPage_id %}
 					<div id='mainImage'>
 						<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />

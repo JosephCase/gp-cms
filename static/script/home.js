@@ -1,9 +1,12 @@
 document.addEventListener('DOMContentLoaded', pageReady);
 
-var oPages = {}
+var oPages = {};
+var $loader = $('#loader');
+var Server;
 
 function pageReady() {
 	attachEventListeners();
+	Server = new _Server();
 }
 
 function attachEventListeners() {
@@ -66,15 +69,20 @@ function reOrder(id, index, lastIndex) {
 	}
 }
 
-function refresh() {
-	// location.reload(true);
-}
 
-var Server = new function() {
+
+var _Server = function() {
+	
+
+
+	var $loader = $('#loader');
 
 	this.update = function(oPages) {
 
-		console.log('update');
+		if ($loader.hasClass('loading')) return false;	//stop double update
+		$loader.addClass('loading');
+
+		console.log($loader.length);
 
 		$.ajax({
 		    type: "PUT",
@@ -83,7 +91,7 @@ var Server = new function() {
 		    data: JSON.stringify(oPages),
 			processData: false,
 			contentType: "application/json; charset=utf-8",
-		    success: refresh,
+		    success: updateDone,
 		    timeout: function() {
 		    	alert('timeout!');
 		    },
@@ -91,11 +99,11 @@ var Server = new function() {
 		        alert(errMsg);
 		    }
 		});
+	}
 
-
-		
-
-
+	function updateDone() {
+		// location.reload(true);
+		$loader.removeClass('loading');
 	}
 
 }

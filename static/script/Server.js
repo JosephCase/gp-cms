@@ -162,7 +162,7 @@ var Server = new function() {
 		    error: function(errMsg) {
 		        alert('There was a problem updating this page. Please contact your system admin. [' + errMsg + ']');
 		    }
-		});
+		});		
 	}
 
 
@@ -188,5 +188,7 @@ var Server = new function() {
 		delete instructions[id];
 		return true;
 	}
+
+	
 
 }

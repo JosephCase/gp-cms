@@ -22,6 +22,13 @@ h1 {
 
 }
 
+.page:hover {
+	background-image: url('../img/edit.png');
+    background-size: 20px;
+    background-position: 98% 50%;
+    background-repeat: no-repeat;	
+}
+
 .controls h5:first-of-type {
 	background-color: #365d6d;
 	/*border-color: #FF7043;*/

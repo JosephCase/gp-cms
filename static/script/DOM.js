@@ -30,6 +30,9 @@ var DOM = new function() {
 	function addEventListeners() {
 
 		// edit page details
+		$('#pageName').on('focus', function() {
+			$('#pageDetails').removeClass('error');
+		});
 		$('#pageName').on('change', Server.editPageName);
 
 		$('#mainImage img').on('click', changeFile);
@@ -328,20 +331,23 @@ var DOM = new function() {
 
 	function updateHandler() {
 
-		var $loader = $('#loader');
 
-		if ($loader.hasClass('loading')) return false;	//stop double update
+		if(validate()) {
 
-		$loader.addClass('loading');
+			var $loader = $('#loader');
 
-		Server.update();
+			if ($loader.hasClass('loading')) return false;	//stop double update
+
+			$loader.addClass('loading');
+
+			Server.update();
+		}
 	}
 
 
 
 	// public functions
 	this.refresh = function(response) {
-		alert(response);
 		if(response) {
 			oResponse = JSON.parse(response);
 			window.location.replace(oResponse.location);
@@ -356,6 +362,16 @@ var DOM = new function() {
 		$('html, body').animate({
 	        scrollTop: elem.offset().top
 	    }, 500);
+	}
+
+	function validate() {
+		var pageName = document.getElementById('pageName');
+		if(pageName.value.trim() == '') {
+			document.getElementById('pageDetails').classList.add('error');
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 }
