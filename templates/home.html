@@ -8,19 +8,23 @@
 		<script type='text/javascript' src='/script/home.js'></script>
 	</head>
 	<body>
+		<div class='controls'>
+			<h1>Sections</h1>
+			{% for section in sections %}
+				<h5 id='{{section.id}}'{% if !section.isParent %} class='page{% if !section.visible %} hidden{% endif %}'{% else %} class='section'{% endif %}>{{section.name}}</h5>
+			{% endfor %}
+		</div>
 		{% for section in sections %}
-		  	<div class='section' id={{section.id}}>
-				<h5{% if !section.isParent %} class='page{% if !section.isParent %} {% if section.visible %}show{% else %}hide{% endif %}{% endif %}' id='{{section.id}}' {% endif %}>{{section.name}}</h5> 
-				{% if section.isParent %} 
-					<p class='add' data-section_id={{section.id}}>Add</p>
+			{% if section.isParent %}
+				<div class='contentList' data-id='{{section.id}}'>
+					<p class='content add' data-section_id={{section.id}}>Create new page</p>
 					<div class='children'>
 						{% for page in section.pages %}
-							<p id='{{page.id}}' class='page {% if page.visible %}show{% else %}hide{% endif %}'>{{page.name}}</p>
+							<p id='{{page.id}}' class='content page {% if !page.visible %}hidden{% endif %}'>{{page.name}}</p>
 						{% endfor %}
 					</div>
-					
-				{% endif %}
-			</div>
-		{% endfor %}
+				</div>
+			{% endif %}
+		{% endfor %}		
 	</body>
 </html>

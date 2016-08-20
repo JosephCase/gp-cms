@@ -8,6 +8,12 @@ function pageReady() {
 
 function attachEventListeners() {
 
+	// change section functionality
+	var pages = document.getElementsByClassName('section');
+	for (var i = 0; i < pages.length; i++) {
+		pages[i].addEventListener('click', sectionClickHandler);
+	}
+
 	// add edit functionality
 	var pages = document.getElementsByClassName('page');
 	for (var i = 0; i < pages.length; i++) {
@@ -21,7 +27,7 @@ function attachEventListeners() {
 	}
 
 	//reorder functionality
-	var sections = document.getElementsByClassName('section');
+	var sections = document.getElementsByClassName('contentList');
 
 	for (var i = sections.length - 1; i >= 0; i--) {
 		if($(sections[i]).find('.children .page').length > 1) {
@@ -29,6 +35,14 @@ function attachEventListeners() {
 		}
 	}
 
+}
+
+function sectionClickHandler() {
+	$('.contentList').hide();
+	$('h5.section').css('backgroundColor', '#abc9d6')
+
+	$(this).css('backgroundColor', '#365d6d')
+	$('.contentList[data-id='  + this.id + ']').show();
 }
 
 function pageClickHandler() {
@@ -53,7 +67,7 @@ function reOrder(id, index, lastIndex) {
 }
 
 function refresh() {
-	location.reload(true);
+	// location.reload(true);
 }
 
 var Server = new function() {
