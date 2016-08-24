@@ -45,6 +45,7 @@ function getExistingPage(response) {
 					page: results[0][0],
 				    pageContent: results[1],
 				    contentDirectory: config.contentDirectory,
+				    previewSize: config.imageSizes[0],
 				    videoFormats: config.videoFormats
 				});
 
