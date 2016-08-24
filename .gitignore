@@ -2,3 +2,4 @@
 content/*
 static/content
 config.json
+*.conf

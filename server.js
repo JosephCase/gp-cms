@@ -8,8 +8,8 @@ var formidable = require("formidable");
 var app = express();
 
 //static files
-app.use(express.static('static'));
-app.use('/content', express.static('content'));
+app.use(express.static(__dirname + '/static'));
+app.use(__dirname + '/content', express.static('content'));
 
 //session check
 app.use(cookieParser("'verde_speranza'"));
@@ -73,7 +73,7 @@ app.patch("/page", function(req, res) {
 	page.updatePage(req, res);
 });
 
-var server = app.listen(8888, function () {
+var server = app.listen(config.port, function () {
 
 	console.log("Express Server has started");
 	server.timeout = 300000;

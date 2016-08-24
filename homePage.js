@@ -23,7 +23,7 @@ function getPage(response) {
 				console.log(err);
 			} else {
 				var nestedResults = nestResults(results);
-				var html = swig.renderFile('templates/home.html', {
+				var html = swig.renderFile(__dirname + '/templates/home.html', {
 					sections: nestedResults
 				});
 				response.write(html);
