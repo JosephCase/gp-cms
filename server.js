@@ -76,7 +76,7 @@ app.patch("/page", function(req, res) {
 var server = app.listen(config.port, function () {
 
 	console.log("Express Server started listening to port " + config.port);
-	server.timeout = 300000;
-
+	server.timeout = config.reqTimeout;
+	
 });
 

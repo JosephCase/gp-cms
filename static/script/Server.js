@@ -160,7 +160,9 @@ var Server = new function() {
 			contentType: false,
 		    success: DOM.refresh,
 		    error: function(errMsg) {
-		        alert('There was a problem updating this page. Please contact your system admin. [' + errMsg + ']');
+		    	console.log(errMsg);
+		        alert('There was a problem updating this page. Please contact support.');
+		        DOM.refresh();
 		    }
 		});
 	}
