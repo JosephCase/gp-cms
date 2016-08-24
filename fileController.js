@@ -4,13 +4,15 @@ var fs = require("fs"),
 	config = require('./config'),
 	async = require('async');
 
+var contentDirectory = __dirname + '/' + config.contentDirectory;
+
 var ffmpeg = require('fluent-ffmpeg');
 
 var convertList = {}; //list of videos being converted atm
 
 function deleteFile(fileName, type, callback) {
 	console.log('DELETING A FILE');
-	var filePath = config.contentDirectory + fileName;
+	var filePath = contentDirectory + fileName;
 
 	if(type == 'img') {
 		deleteImage(filePath, callback);
@@ -76,7 +78,7 @@ function saveFile(file, fileName, callback) {
 	console.log('//save file');
 	if((typeof fileName) === 'string') {
 		
-		var newPath = config.contentDirectory + fileName;
+		var newPath = contentDirectory + fileName;
 
 		//for images
 		if(file.type.indexOf('image/') == 0) {
