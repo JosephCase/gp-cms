@@ -41,10 +41,11 @@ function getExistingPage(response) {
 				console.log(err);
 			} else {
 				results[0][0].newPage = false;
-				var html = swig.renderFile('templates/page.html', {
+				var html = swig.renderFile(__dirname + '/templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
 				    contentDirectory: config.contentDirectory,
+				    previewSize: config.imageSizes[0],
 				    videoFormats: config.videoFormats
 				});
 
@@ -57,7 +58,7 @@ function getExistingPage(response) {
 
 function getNewPage(response, parent_id) {
 
-	var html = swig.renderFile('templates/page.html', {
+	var html = swig.renderFile(__dirname + '/templates/page.html', {
 		page: {newPage: true, parentPage_id: parent_id, id: 0},
 	    pageContent: {},
 	    contentDirectory: config.contentDirectory,
@@ -183,7 +184,7 @@ function updatePage(request, response) {
 			    console.log('***DONE DONE DONE***');
 			    if(err) {
 			    	response.statusCode = 500;
-			    	response.write(err.message);
+			    	// response.write(err);
 			    }
 				response.end();
 			});					

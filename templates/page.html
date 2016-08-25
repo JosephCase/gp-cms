@@ -22,7 +22,7 @@
 				<p class='errorMsg'>Please enter a page name</p>
 				{% if page.parentPage_id %}
 					<div id='mainImage'>
-						<img src='{{ contentDirectory + page.mainImage_url }}' draggable="false"  />
+						<img src="{{ contentDirectory + page.mainImage_url.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
 						<input type="file" class='hidden' accept="image/*" />
 					</div>
 				{% endif %}
@@ -44,7 +44,7 @@
 				  		<textarea draggable="true">{{ content.content }}</textarea>
 				  		{% set sizeRange = [12,13,14,15,16,17,18] %}
 				  	{% elseif content.type == 'img' %}
-				  		<img src='{{ contentDirectory + content.content }}' draggable="false"  />
+				  		<img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
 						<input type="file" class='hidden' accept="image/*" />
 				  		{% set sizeRange = [1,2,3,4] %}
 				  	{% elseif content.type == 'video' %}
@@ -70,11 +70,11 @@
 
 			  		<span>Language</span>
 			  		<select class='lang'>
-			  			<option {% if content.language == 'NUL' %}selected {% endif %}value='NULL'>None</option>
+			  			<option {% if content.language == 'NULL' %}selected {% endif %}value='NULL'>All</option>
 			  			<option {% if content.language == 'eng' %}selected {% endif %}value='eng'>English</option>
 			  			<option {% if content.language == 'ita' %}selected {% endif %}value='ita'>Italian</option>
 			  		</select>
-			  		<span class="delete">Delete</span>
+			  		<span class="delete"></span>
 				 </div>
 			{% endfor %}
 		</div>

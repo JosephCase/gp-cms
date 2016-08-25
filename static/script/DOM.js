@@ -189,12 +189,12 @@ var DOM = new function() {
 
 		// Language input
 		elemHTML = elemHTML + "<span>Language</span><select class='lang'>" +
-			"<option selected value='NULL'>None</option>" +
+			"<option selected value='NULL'>All</option>" +
   			"<option value='eng'>English</option>" +
   			"<option value='ita'>Italian</option>" +
   		"</select>";
 		
-  		elemHTML = elemHTML + "<span class='delete'>Delete</span>" +
+  		elemHTML = elemHTML + "<span class='delete'></span>" +
 		"</div>";
 
 		$newElemt = $(elemHTML);
@@ -269,12 +269,12 @@ var DOM = new function() {
 		elemHTML += "</select>";
 
 		elemHTML = elemHTML + "<span>Language</span><select class='lang'>" +
-			"<option selected value='NULL'>None</option>" +
+			"<option selected value='NULL'>All</option>" +
   			"<option value='eng'>English</option>" +
   			"<option value='ita'>Italian</option>" +
   		"</select>";
 		
-  		elemHTML = elemHTML + "<span class='delete'>Delete</span>" +
+  		elemHTML = elemHTML + "<span class='delete'></span>" +
 		"</div>";
 
 		$newElemt = $(elemHTML);

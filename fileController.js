@@ -4,13 +4,15 @@ var fs = require("fs"),
 	config = require('./config'),
 	async = require('async');
 
+var contentDirectory = __dirname + '/' + config.contentDirectory;
+
 var ffmpeg = require('fluent-ffmpeg');
 
 var convertList = {}; //list of videos being converted atm
 
 function deleteFile(fileName, type, callback) {
 	console.log('DELETING A FILE');
-	var filePath = config.contentDirectory + fileName;
+	var filePath = contentDirectory + fileName;
 
 	if(type == 'img') {
 		deleteImage(filePath, callback);
@@ -23,14 +25,8 @@ function deleteFile(fileName, type, callback) {
 }
 
 function deleteImage(filePath, all_done) {
-	var tasks = [function(callback){
-		fs.unlink(filePath, function(err) {
-			if(err) {
-				console.log("Could't delete file: " + err);
-			}
-			callback();
-		});
-	}]
+
+	var tasks = [];
 
 	for (var i = config.imageSizes.length - 1; i >= 0; i--) {
 		(function(_i) {
@@ -82,13 +78,11 @@ function saveFile(file, fileName, callback) {
 	console.log('//save file');
 	if((typeof fileName) === 'string') {
 		
-		var newPath = config.contentDirectory + fileName;
+		var newPath = contentDirectory + fileName;
 
 		//for images
 		if(file.type.indexOf('image/') == 0) {
-			fs.rename(file.path, newPath, function() {
-				resizeImage(newPath, callback)
-			});			
+			resizeImage(file.path, newPath, callback);	
 		} else if(file.type.indexOf('video/') == 0) {
 			saveVideo(file.path, newPath, callback);		
 		} else {
@@ -100,23 +94,23 @@ function saveFile(file, fileName, callback) {
 	}
 }
 
-function resizeImage(newPath, all_done_callback) {
+function resizeImage(path, newPath, all_done_callback) {
 	var tasks = [];		
 	for (var i = config.imageSizes.length - 1; i >= 0; i--) {
 		(function(_i) {
 			tasks.push(function(callback) {
-				createNewSize(newPath, config.imageSizes[_i], callback);
+				createNewSize(path, newPath, config.imageSizes[_i], callback);
 			});
-		}(i));			
+		}(i));
 	}
 	async.parallel(tasks, all_done_callback);
 }
 
-function createNewSize(path, newSize, callback) {
+function createNewSize(path, newPath, newSize, callback) {
 
 	console.log('//RESIZE');
 
-	var newPath = path.replace('.jpg', '_x' + newSize + '.jpg');
+	var sizePath = newPath.replace('.jpg', '_x' + newSize + '.jpg');
 
 	im.identify(path, function(err, features){
 		if (err) {
@@ -128,7 +122,7 @@ function createNewSize(path, newSize, callback) {
 
 			im.resize({
 				srcPath: path,
-				dstPath: newPath,
+				dstPath: sizePath,
 				width:   newSize,
 				filter: 'Lanczos'
 			}, function(err, stdout, stderr){
