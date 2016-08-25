@@ -129,6 +129,14 @@ img {
 	cursor: pointer;
 	background-color: rgb(200, 200, 200);
 	margin-left: 0;
+	content: Test;
+}
+
+.content .delete:before {
+	content: 'Delete';
+}
+.content.deleted .delete:before {
+	content: 'Undelete';
 }
 
 #loader {
