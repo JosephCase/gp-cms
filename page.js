@@ -91,7 +91,7 @@ function createPage(request, response) {
 
 			if(fields.pageName) {
 				var pageName = fields.pageName;
-				var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
+				var pageUrl = pageName.toLowerCase().replace(/ /g, "-").replace(/'/g, "").replace(/"/g, "");
 			}
 
 			var sql = "INSERT INTO page (name, url, parentPage_id, visible) VALUES(?,?,?,?); " +
@@ -200,7 +200,7 @@ function updatePageDetails(pageName, mainImage, visible, parent_callback) {
 		// if the page name is set, change it on the server
 		if(pageName) {
 
-			var pageUrl = pageName.toLowerCase().replace(/ /g, "_");
+			var pageUrl = pageName.toLowerCase().replace(/ /g, "-").replace(/'/g, "").replace(/"/g, "");
 			db.connection.query( 
 				"UPDATE page SET name=?, url=? WHERE id=?",
 				[pageName, pageUrl, pageId],
