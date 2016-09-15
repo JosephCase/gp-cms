@@ -46,7 +46,7 @@ var sessionChecker = function (req, res, next) {
 		next();
 	} else {
 		console.log('REDIRECT TO LOGIN');
-		res.redirect('/login.html');
+		res.redirect('reactLogin/login.html');
 	}
 };
 
