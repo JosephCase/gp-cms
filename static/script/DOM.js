@@ -182,7 +182,7 @@ var DOM = new function() {
 
 		// size input	
 		elemHTML += "<span>Size</span><select class='size'>";
-		for (var i = 10; i <= 20; i++) {
+		for (var i = 12; i <= 18; i++) {
 			elemHTML += "<option" + ((i == 16) ? ' selected' : '') + " value='" + i + "'>" + i + "</option>";
 		}
 		elemHTML += "</select>";
