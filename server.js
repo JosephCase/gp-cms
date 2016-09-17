@@ -46,7 +46,7 @@ var sessionChecker = function (req, res, next) {
 		next();
 	} else {
 		console.log('REDIRECT TO LOGIN');
-		res.redirect('reactLogin/login.html');
+		res.redirect('react/login.html');
 	}
 };
 
@@ -55,7 +55,7 @@ app.use(sessionChecker);
 
 
 // Homepage
-app.get("/", function(req, res) {
+app.get("/homeContent", function(req, res) {
 	homePage.getPage(res);
 });
 app.put("/", function(req, res) {
