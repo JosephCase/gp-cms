@@ -55,11 +55,30 @@ app.use(sessionChecker);
 
 
 // Homepage
-app.get("/homeContent", function(req, res) {
-	homePage.getPage(res);
+//Get the hompage HTML
+app.get("/", function(req, res) {
+	homePage.getPage(function(page) {
+		res.write(page);
+		res.end();
+	});
 });
+//Update the order of the pages on the homepage
 app.put("/", function(req, res) {
-	homePage.reOrderPages(req, res);
+	homePage.reOrderPages(req, function() {
+		homePage.getPageContent(function(homePageContent) {
+			var json = JSON.stringify(homePageContent);
+			res.write(json);
+			res.end();
+		});
+	});
+});
+// Get the homepage content Object
+app.get("/homeContent", function(req, res) {
+	homePage.getPageContent(function(homePageContent) {
+		var json = JSON.stringify(homePageContent);
+		res.write(json);
+		res.end();
+	});
 });
 
 // Page

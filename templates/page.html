@@ -83,3 +83,27 @@
 
 	</body>
 </html>
+
+
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" href="css/theme.css">
+		<link rel="stylesheet" type="text/css" href="css/page.css">
+		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+		<script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
+	    <script src="https://unpkg.com/react@15.3.1/dist/react.js"></script>
+		<script src="https://unpkg.com/react-dom@15.3.1/dist/react-dom.js"></script>
+	    <script type="text/babel" src="page.jsx"></script>
+	    <script id='contentJSON' type="application/json">{{JSON.stringify(content)}}</script>
+	</head>
+	<body>
+
+		<input id='newPage' type='hidden' value={{page.newPage}} />
+		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
+		<input id='pageId' type='hidden' value={{page.id}} />
+		<div id='container'></div>
+
+	</body>
+</html>

@@ -5,8 +5,19 @@ var db = require('./sqlConnection.js'),
 	formidable = require("formidable");
 
 // get the page content and send it to the client
-function getPage(response) {
+function getPage(callback) {
 
+	console.log("Get the homepage")
+
+	getPageContent(function(content){
+		var html = swig.renderFile(__dirname + '/templates/home.html', {
+			content: content
+		});
+		callback(html)
+	});	
+
+}
+function getPageContent(callback) {
 	console.log("Get the homepage content")
 
 	db.connection.query(
@@ -23,23 +34,13 @@ function getPage(response) {
 				console.log(err);
 			} else {
 				var nestedResults = nestResults(results);
-
-				// var html = swig.renderFile(__dirname + '/templates/home.html', {
-				// 	sections: nestedResults
-				// });
-				// response.write(html);
-
-				// serialize and json and send to client
-				var json = JSON.stringify(nestedResults);
-				response.write(json);
-
+				callback(nestedResults);
 			}
-			response.end();
 		}
 	);
 }
 
-function reOrderPages(request, response) {
+function reOrderPages(request, callback) {
 
 	console.log('Re-order the pages');
 
@@ -48,7 +49,7 @@ function reOrderPages(request, response) {
 	form.parse(request, function(error, fields, files) {
 		
 		if(error) {
-			response.end();
+			console.log(error);
 		} else {
 
 			var sql = '';
@@ -65,8 +66,7 @@ function reOrderPages(request, response) {
 					if(err) {
 						console.log(err);
 					}
-					console
-					response.end();
+					callback();
 				}
 			);		
 		}		
@@ -94,4 +94,5 @@ function nestResults(results) {
 
 
 exports.getPage = getPage;
+exports.getPageContent = getPageContent;
 exports.reOrderPages = reOrderPages;

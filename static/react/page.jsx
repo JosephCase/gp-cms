@@ -1,4 +1,4 @@
-var Content = React.createClass({
+var Page = React.createClass({
 	sectionClick: function(sectionId) {
 		this.setState({
 			selected: sectionId
@@ -6,8 +6,7 @@ var Content = React.createClass({
 	},
 	getInitialState: function() {
 		return({
-			sections: [],
-			selected: 0,
+			content: [],
 			loading: true
 		})
 	},
@@ -16,27 +15,29 @@ var Content = React.createClass({
 		this.instructions = {};
 	},
 	getData: function() {
-		// get the content	    	
-    	var content = JSON.parse($("#contentJSON").html());
+		// get the content
+	    $.get('/page?' + , function (result) {
+	    	var content = JSON.parse(result);
 
-    	//set the first section as selected
-    	var selected;
+	    	//set the first section as selected
+	    	var selected;
 
-    	if(this.state.selected == 0) {	//if nothings selected, select the first section
-	    	for (var i = 0; i < content.length; i++) {
-	    		if(content[i].isParent) {
-	    			selected = content[i].id;
-	    			break;
-	    		}
+	    	if(this.state.selected == 0) {	//if nothings selected, select the first section
+		    	for (var i = 0; i < content.length; i++) {
+		    		if(content[i].isParent) {
+		    			selected = content[i].id;
+		    			break;
+		    		}
+		    	}
+	    	} else {
+	    		selected = this.state.selected;
 	    	}
-    	} else {
-    		selected = this.state.selected;
-    	}
-    	this.setState({
-      		sections: content,
-      		selected: selected,
-      		loading: false
-      	});
+	    	this.setState({
+	      		sections: content,
+	      		selected: selected,
+	      		loading: false
+	      	});
+	    }.bind(this));
 	},
 	addInstruction: function(id, index) {
 		this.instructions[id] = {id: id, position: index}
@@ -56,14 +57,7 @@ var Content = React.createClass({
 		    data: JSON.stringify(this.instructions),
 			processData: false,
 			contentType: "application/json; charset=utf-8",
-			// if the update is successful it returns the newly updated content
-		    success: function(jsonContent) {
-		    	var content = JSON.parse(jsonContent);
-		    	this.setState({
-		    		content: content,
-		    		loading: false
-		    	})
-		    }.bind(this),
+		    success: this.updateDone,
 		    timeout: function() {
 		    	alert('timeout!');
 		    },
@@ -71,6 +65,9 @@ var Content = React.createClass({
 		        alert(errMsg);
 		    }
 		});
+	},
+	updateDone: function() {
+		this.getData();	//get the data from the server to verfify that it has updated correctly
 	},
 	render: function() {
 		var loaderClass = this.state.loading ? 'loading' : '';
@@ -211,5 +208,5 @@ var DraggableList = React.createClass({
 });
 
 
-ReactDOM.render(<Content />, document.getElementById('container'));
+ReactDOM.render(<Page />, document.getElementById('container'));
 

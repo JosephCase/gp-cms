@@ -1,31 +1,18 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" type="text/css" href="css/theme.css">
-		<link rel="stylesheet" type="text/css" href="css/home.css">
-		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
-		<script type='text/javascript' src='/script/toolbox.js'></script>
-		<script type='text/javascript' src='/script/home.js'></script>
+		<link rel="stylesheet" type="text/css" href="/css/theme.css">
+		<link rel="stylesheet" type="text/css" href="/css/home.css">		
+	    <script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+	    <script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
+	    <script src="https://unpkg.com/react@15.3.1/dist/react.js"></script>
+		<script src="https://unpkg.com/react-dom@15.3.1/dist/react-dom.js"></script>
+	    <script type="text/babel" src="/react/home.jsx"></script>
+	    <script id='contentJSON' type="application/json">{{JSON.stringify(content)}}</script>
 	</head>
 	<body>
-		<div class='controls'>
-			<h1>Sections</h1>
-			{% for section in sections %}
-				<h5 id='{{section.id}}'{% if !section.isParent %} class='page{% if !section.visible %} hidden{% endif %}'{% else %} class='section'{% endif %}>{{section.name}}</h5>
-			{% endfor %}
-		</div>
-		{% for section in sections %}
-			{% if section.isParent %}
-				<div class='contentList' data-id='{{section.id}}'>
-					<p class='content add' data-section_id={{section.id}}>Create new page</p>
-					<div class='children'>
-						{% for page in section.pages %}
-							<p id='{{page.id}}' class='content page {% if !page.visible %}hidden{% endif %}'>{{page.name}}</p>
-						{% endfor %}
-					</div>
-				</div>
-			{% endif %}
-		{% endfor %}	
-		<div id='loader'></div>	
+		<div id='container'>
+			<!-- React goes here -->
+		</div>			
 	</body>
 </html>
