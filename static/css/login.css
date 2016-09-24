@@ -2,13 +2,16 @@ html, body {
 	height: 100%;
 }
 
-body {
+
+#container {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-div	{
+div.loginBox	{
 	width: 300px;
 	background-color: #abc9d6;
 	padding: 10px;

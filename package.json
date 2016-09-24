@@ -1,15 +1,22 @@
 {
-	"dependencies": {
-		"async": "",
-		"cookie-parser": "",
-		"express": "",
-		"fluent-ffmpeg": "", 
-		"formidable": "", 
-		"imagemagick": "",
-		"mysql": "",
-		"path": "",
-		"querystring": "",
-		"swig": ""
-	}
+  "dependencies": {
+    "async": "",
+    "babel-core": "",
+    "babel-loader": "",
+    "babel-preset-es2015": "",
+    "babel-preset-es2016": "^6.11.3",
+    "babel-preset-react": "",
+    "babel-preset-stage-2": "^6.13.0",
+    "cookie-parser": "",
+    "es6": "0.0.7",
+    "express": "",
+    "fluent-ffmpeg": "",
+    "formidable": "",
+    "imagemagick": "",
+    "mysql": "",
+    "path": "",
+    "querystring": "",
+    "swig": "",
+    "webpack": ""
+  }
 }
-

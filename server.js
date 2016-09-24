@@ -46,7 +46,7 @@ var sessionChecker = function (req, res, next) {
 		next();
 	} else {
 		console.log('REDIRECT TO LOGIN');
-		res.redirect('react/login.html');
+		res.redirect('login.html');
 	}
 };
 
@@ -65,21 +65,21 @@ app.get("/", function(req, res) {
 //Update the order of the pages on the homepage
 app.put("/", function(req, res) {
 	homePage.reOrderPages(req, function() {
-		homePage.getPageContent(function(homePageContent) {
-			var json = JSON.stringify(homePageContent);
-			res.write(json);
-			res.end();
-		});
+		writeHomepageContent(res);
 	});
 });
 // Get the homepage content Object
 app.get("/homeContent", function(req, res) {
+	writeHomepageContent(res);
+});
+
+var writeHomepageContent = function(res) {
 	homePage.getPageContent(function(homePageContent) {
 		var json = JSON.stringify(homePageContent);
 		res.write(json);
 		res.end();
 	});
-});
+}
 
 // Page
 app.get("/page", function(req, res) {

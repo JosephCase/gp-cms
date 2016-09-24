@@ -102,7 +102,7 @@ var LoginBox = React.createClass({
 	},
 	render: function() {
 		return(
-			<div>
+			<div className='loginBox'>
 				<input type='username' id='username' value={this.state.username.value} placeholder={'Enter your username'} className={this.getInputClass('username')} onFocus={this.focusHandler} onChange={this.changeHander} />
 				<input type='password' id='password' value={this.state.password.value} placeholder={'Enter your password'} className={this.getInputClass('password')} onFocus={this.focusHandler} onChange={this.changeHander} />
 				<p id='errorMsg' className={this.state.errorMsg.class}>{this.state.errorMsg.message}</p>			
@@ -112,4 +112,4 @@ var LoginBox = React.createClass({
 	}
 });
 
-React.render(<LoginBox />, document.body);
+ReactDOM.render(<LoginBox />, document.getElementById('container'));

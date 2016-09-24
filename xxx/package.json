@@ -1,0 +1,23 @@
+{
+  "name": "pagegrabberx",
+  "version": "1.0.0",
+  "description": "Opening index.html in a browser will load a generic test page which in turn loads creative/index.html into the format.",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://Joseph_Case@bitbucket.org/bluequest/pagegrabberx.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "webpack": "",
+    "babel-loader": "",
+    "babel-core": "",
+    "babel-preset-es2015": "",
+    "babel-preset-react": ""
+  }
+
+}

@@ -205,7 +205,6 @@ var DraggableList = React.createClass({
 	},
 
 	dragend: function(e) {
-		console.log('dragend');
 		if(this.draggedIndex != null) {
 			e.target.style.opacity = 1;
 			this.draggedIndex = null;
