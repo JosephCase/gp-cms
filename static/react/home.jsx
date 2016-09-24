@@ -13,7 +13,6 @@ var Content = React.createClass({
 	},
 	componentDidMount: function() {
 		this.getData();
-		this.instructions = {};
 	},
 	getData: function() {
 		// get the content	    	
@@ -38,22 +37,38 @@ var Content = React.createClass({
       		loading: false
       	});
 	},
-	addInstruction: function(id, index) {
-		this.instructions[id] = {id: id, position: index}
+	reOrderPages: function(sectionIndex, index1, index2) {
+
+		var newSections = this.state.sections;
+
+		// swap the indexes
+		var swapTemp = newSections[sectionIndex].pages[index1];
+		newSections[sectionIndex].pages[index1] = newSections[sectionIndex].pages[index2];
+		newSections[sectionIndex].pages[index2] = swapTemp;
+
+		// explicitly set a new index property equal to the new index
+		newSections[sectionIndex].pages[index1].newIndex = index1;
+		newSections[sectionIndex].pages[index2].newIndex = index2;
+
+		this.setState({
+			sections: newSections
+		})
+		
 	},
-	update: function() {
-		// if ($loader.hasClass('loading')) return false;	
-		// $loader.addClass('loading');
+	update: function(sectionIndex) {
 		if(this.state.loading) return false;	//stop double update
 		this.setState({
 			loading: true
+		});
+		var reOrderedPages = this.state.sections[sectionIndex].pages.filter(function(page) {
+			return page.newIndex > -1;
 		})
 
 		$.ajax({
 		    type: "PUT",
 		    url: "/",
 		    // The key needs to match your method's input parameter (case-sensitive).
-		    data: JSON.stringify(this.instructions),
+		    data: JSON.stringify(reOrderedPages),
 			processData: false,
 			contentType: "application/json; charset=utf-8",
 			// if the update is successful it returns the newly updated content
@@ -78,10 +93,10 @@ var Content = React.createClass({
 			<div className='wrapper'>
 				<Controls sections={this.state.sections} selected={this.state.selected} sectionClick={this.sectionClick} />
 				{
-					this.state.sections.map(function(section) {
+					this.state.sections.map(function(section, index) {
 						if(section.isParent) {
-							return <PageList key={section.id} id={section.id} selected={section.id == this.state.selected} 
-							pages={section.pages} onDrag={this.addInstruction} onDrop={this.update} />
+							return <PageList key={section.id} index={index} id={section.id} selected={section.id == this.state.selected} 
+							pages={section.pages} reOrderPages={this.reOrderPages} updatePageOrder={this.update} />
 						}
 				 	}.bind(this))
 				}
@@ -148,12 +163,19 @@ var PageList = React.createClass({
 	addPage: function() {
 		window.location.href = '/page?id=0&parent_id=' + this.props.id;
 	},
+	reOrderPages: function(index1, index2) {
+		// pass through the index of this page list so that we know which pages to re-order
+		this.props.reOrderPages(this.props.index, index1, index2);
+	},
+	updatePageOrder: function() {
+		this.props.updatePageOrder(this.props.index);
+	},
 	render: function() {		
 		var className = (this.props.selected) ? 'contentList selected' : 'contentList'; 
 		return(
 			<div className={className}>
 				<p className='content add' onClick={this.addPage}>Create new page</p>
-				<DraggableList onDrag={this.props.onDrag} onDrop={this.props.onDrop}>
+				<DraggableList onReOrder={this.reOrderPages} onDrop={this.updatePageOrder}>
 					{
 						this.props.pages.map(function(page) {
 							return <Page key={page.id} id={page.id} className='content page' name={page.name} visible={page.visible} />
@@ -166,30 +188,30 @@ var PageList = React.createClass({
 });
 
 var DraggableList = React.createClass({
-	dragstart: function(e) {
-		this.$elem = $(e.target);
+	dragstart: function(index, e) {
+		e.target.style.opacity = 0.5;
+		this.draggedIndex = index;
 	},
 
-	dragover: function(e) {
-		if(this.$elem) {
+	dragover: function(index, e) {
+		if(this.draggedIndex != null) {
 			var thisRect = e.target.getBoundingClientRect();
-			if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {
-				$(e.target).before(this.$elem);
-			} else {
-				$(e.target).after(this.$elem);					
+			if((e.clientY < thisRect['top'] + 0.5 * thisRect['height'] && this.draggedIndex > index) 
+			|| (e.clientY >= thisRect['top'] + 0.5 * thisRect['height'] && this.draggedIndex < index)) {
+				this.props.onReOrder(this.draggedIndex, index);
+				this.draggedIndex = index;		
 			}
-			console.log('drag over');
-			this.props.onDrag(e.target.id, $(e.target).index());
 		}
 	},
 
-	dragend: function() {
-		// this.props.onReOrder(this.$elem.id, this.$elem.index());
-		if(this.$elem) {
-			if(this.props.onDrop) {
-				this.props.onDrop();
-			}
-			this.$elem = null;
+	dragend: function(e) {
+		console.log('dragend');
+		if(this.draggedIndex != null) {
+			e.target.style.opacity = 1;
+			this.draggedIndex = null;
+		}
+		if(this.props.onDrop) {
+			this.props.onDrop();
 		}
 	},
 	render: function() {		
@@ -197,9 +219,9 @@ var DraggableList = React.createClass({
 
 		//Add drag event props to children
 		const childrenWithProps = React.Children.map(this.props.children,
-			(child) => React.cloneElement(child, {
-				onDragStart: this.dragstart,
-				onDragOver: this.dragover,
+			(child, index) => React.cloneElement(child, {
+				onDragStart: this.dragstart.bind(this, index), //	child.key?	||	
+				onDragOver: this.dragover.bind(this, index), //	child.key?	||	
 				onDragEnd: this.dragend,
 				draggable: 'true'
 			})

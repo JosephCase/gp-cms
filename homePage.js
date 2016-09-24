@@ -55,9 +55,10 @@ function reOrderPages(request, callback) {
 			var sql = '';
 			var params = [];
 
-			for(var propertyName in fields) {
+			// loop through the reordered pages building up sql query with params
+			for(var page in fields) {
 				sql += 'UPDATE page SET position=? WHERE id=?;'
-				params.push(fields[propertyName].position, fields[propertyName].id)
+				params.push(fields[page].newIndex, fields[page].id)
 			}
 
 			db.connection.query(
