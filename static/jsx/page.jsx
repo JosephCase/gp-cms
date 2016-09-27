@@ -1,159 +1,200 @@
-var Page = React.createClass({
-	sectionClick: function(sectionId) {
-		this.setState({
-			selected: sectionId
-		});
-	},
+var DraggableList = require('./draggableList.jsx');
+
+var TextElem = require('./Elems.jsx').TextElem;
+var ImgElem = require('./Elems.jsx').ImgElem;
+var VideoElem = require('./Elems.jsx').VideoElem;
+
+
+
+
+
+var PageWrapper = React.createClass({
+
+	textSizes: [1,2,3,4,5],	
+	imgSizes: [1,2,3,4],
+	videoFormats: [{ext: 'webm'}, {ext: 'mp4'}],
+	contentDirectory: 'content/',
+	size: '_x500',
+
 	getInitialState: function() {
 		return({
-			content: [],
-			loading: true
+			elements: []
 		})
 	},
 	componentDidMount: function() {
-		this.getData();
-		this.instructions = {};
-	},
-	getData: function() {
-		// get the content
-	    $.get('/page?' + , function (result) {
-	    	var content = JSON.parse(result);
 
-	    	//set the first section as selected
-	    	var selected;
+		this.formData = new FormData();
 
-	    	if(this.state.selected == 0) {	//if nothings selected, select the first section
-		    	for (var i = 0; i < content.length; i++) {
-		    		if(content[i].isParent) {
-		    			selected = content[i].id;
-		    			break;
-		    		}
-		    	}
-	    	} else {
-	    		selected = this.state.selected;
-	    	}
-	    	this.setState({
-	      		sections: content,
-	      		selected: selected,
-	      		loading: false
-	      	});
-	    }.bind(this));
-	},
-	addInstruction: function(id, index) {
-		this.instructions[id] = {id: id, position: index}
-	},
-	update: function() {
-		// if ($loader.hasClass('loading')) return false;	
-		// $loader.addClass('loading');
-		if(this.state.loading) return false;	//stop double update
+		var content = JSON.parse($("#contentJSON").html());
+
+		console.log(content);
+
 		this.setState({
-			loading: true
+			elements: content
 		})
+	},
 
-		$.ajax({
-		    type: "PUT",
-		    url: "/",
-		    // The key needs to match your method's input parameter (case-sensitive).
-		    data: JSON.stringify(this.instructions),
-			processData: false,
-			contentType: "application/json; charset=utf-8",
-		    success: this.updateDone,
-		    timeout: function() {
-		    	alert('timeout!');
-		    },
-		    failure: function(errMsg) {
-		        alert(errMsg);
-		    }
+	onChangeText: function(index, newElem) {
+		var newElems = this.state.elements;
+		newElems[index] = newElem;
+		this.setState({
+			elements: newElems
 		});
 	},
-	updateDone: function() {
-		this.getData();	//get the data from the server to verfify that it has updated correctly
+	onImgChange(index, value, file) {
+		var newElems = this.state.elements;
+		// newElems[index].content = value;
+		newElems[index].instruction = 'edit';
+
+		// add the file to the form data object, with the element id so that it can be referenced by the element on the server
+		this.formData.set(newElems[index].id, file);
+
+		this.setState({
+			elements: newElems
+		});
 	},
-	render: function() {
-		var loaderClass = this.state.loading ? 'loading' : '';
-		return(
-			<div className='wrapper'>
-				<Controls sections={this.state.sections} selected={this.state.selected} sectionClick={this.sectionClick} />
-				{
-					this.state.sections.map(function(section) {
-						if(section.isParent) {
-							return <PageList key={section.id} id={section.id} selected={section.id == this.state.selected} 
-							pages={section.pages} onDrag={this.addInstruction} onDrop={this.update} />
-						}
-				 	}.bind(this))
-				}
-				<div id='loader' className={loaderClass}></div>
-			</div>
-		)
-	}
-});
+	onVideoChange(index, file) {
+		var newElems = this.state.elements;
+		newElems[index].content = '';
+		newElems[index].newVideo = index;
+		newElems[index].instruction = 'edit';
 
-var Controls = React.createClass({
-	render: function() {
-		return(
-			<div className='controls'>
-			<h1>Sections</h1>
+		// add the file to the form data object, with the element id so that it can be referenced by the element on the server
+		this.formData.set(newElems[index].id, file);
 
-			{
-				this.props.sections.map(function(section) {
-					if(section.isParent) {
-						return <SectionSwitch key={section.id} id={section.id} selected={section.id == this.props.selected} 
-						name={section.name} onClick={this.props.sectionClick} />
-					} else {
-						return <Page key={section.id} id={section.id} className='page' name={section.name} visible={section.visible} />
-					}
-			 	}.bind(this))
+		this.setState({
+			elements: newElems
+		});
+	},
+	onSizeChange: function(index, value) {
+		console.log(index);
+		var newElems = this.state.elements;
+		newElems[index].size = value;
+		newElems[index].instruction = 'edit';
+		this.setState({
+			elements: newElems
+		});
+	},
+	onLangChange: function(index, value) {
+		var newElems = this.state.elements;
+		newElems[index].language = value;
+		newElems[index].instruction = 'edit';
+		this.setState({
+			elements: newElems
+		});
+	},
+	onReOrderElems: function(index1, index2) {
+		var newElems = this.state.elements;
+
+		// swap the indexes
+		var swapTemp = newElems[index1];
+		newElems[index1] = newElems[index2];
+		newElems[index2] = swapTemp;
+
+		// explicitly set a new index property equal to the new index
+		newElems[index1].position = index1;
+		newElems[index1].instruction = 'edit';
+
+		newElems[index2].position = index2;
+		newElems[index2].instruction = 'edit';
+
+		this.setState({
+			elements: newElems
+		})
+	},
+	onDelete: function(index) {
+		var newElems = this.state.elements;
+		if (newElems[index].instruction == 'delete') {	//toggle the delete off
+
+			//if there's an old instruction re-instate this, otherwise remove the instruction 
+			if(newElems[index].instruction_old) {
+				newElems[index].instruction = newElems[index].instruction_old;
+				delete newElems[index].instruction_old;
+			} else {
+				delete newElems[index].instruction;
+			}
+
+		} else if (newElems[index].instruction == 'edit') {	//replace edit instruction but remember it incase we revert
+			newElems[index].instruction_old = newElems[index].instruction;
+			newElems[index].instruction = 'delete';
+		} else if (newElems[index].instruction == 'add') {	//if it's new just remove it
+			newElems.splice(index, 1);
+		} else {
+			newElems[index].instruction = 'delete';
+		}
+		this.setState({
+			elements: newElems
+		});
+	},
+
+	getContent: function() {
+
+	},
+
+	// Add text element
+	addText: function() {
+
+	},
+
+	//Submit changes
+	submit: function() {
+		console.log('Submit to server');
+		var changes = this.state.elements.filter(function(elem) {
+			return elem.instruction
+		});
+
+		//get the page id from hidden input
+		var pageId = document.getElementById('pageId').value;
+		this.formData.set('pageId', pageId);
+
+		this.formData.append('content', JSON.stringify(changes));
+
+		var method = "PATCH";	//hardcode to edit
+
+		$.ajax({
+		    type: method,
+		    url: '/page',
+		    // The key needs to match your method's input parameter (case-sensitive).
+		    data: this.formData,
+			processData: false,
+			contentType: false,
+		    // success: DOM.refresh,
+		    error: function(errMsg) {
+		    	console.log(errMsg);
+		        alert('There was a problem updating this page. Please contact support.');
+		        // DOM.refresh();
 		    }
+		});	
 
-			</div>
-		)
-	}
-});
-
-var SectionSwitch = React.createClass({
-	//validate props
-	//handle click
-	click: function() {
-		this.props.onClick(this.props.id);
 	},
+
 	render: function() {
-		var className = (this.props.selected) ? 'section selected' : 'section'; 
 		return(
-			<h5 id={this.props.id} className={className} onClick={this.click}>{this.props.name}</h5>
-		)
-	}
-});
 
-var Page = React.createClass({
-	//validate props
-	//handle click
-	click: function() {
-		window.location.href = '/react/page.html?id=' + this.props.id;
-	},
-	
-	render: function() {
-		var { visible, className, name, ...other } = this.props; //destructure the props
-		console.log(...other);
-		var className = this.props.visible ? this.props.className : this.props.className + ' hidden';
-		return(
-			<h5 {...other} className={className} onClick={this.click}>{this.props.name}</h5>
-		)
-	}
-});
-
-var PageList = React.createClass({
-	addPage: function() {
-		window.location.href = '/page?id=0&parent_id=' + this.props.id;
-	},
-	render: function() {		
-		var className = (this.props.selected) ? 'contentList selected' : 'contentList'; 
-		return(
-			<div className={className}>
-				<p className='content add' onClick={this.addPage}>Create new page</p>
-				<DraggableList onDrag={this.props.onDrag} onDrop={this.props.onDrop}>
+			<div>
+				<div className='controls'>
+					<h4><a href="/">Home</a></h4>					
+					<p className='btn' onClick={this.addText}>Add text</p>					
+					<p id="update" className='btn' onClick={this.submit}>Save</p>	
+				</div>
+				<DraggableList className='contentList' onReOrder={this.onReOrderElems}>
 					{
-						this.props.pages.map(function(page) {
-							return <Page key={page.id} id={page.id} className='content page' name={page.name} visible={page.visible} />
+						this.state.elements.map(function(elem, i) {
+							if(elem.type == 'text') {
+								return <TextElem key={elem.id} index={i} sizeRange={this.textSizes} 
+								 onChange={this.onChangeText} onSizeChange={this.onSizeChange} 
+								 onLangChange={this.onLangChange} onDelete={this.onDelete} elemDesc={elem} />
+							} else if(elem.type == 'img') {
+								return <ImgElem key={elem.id} index={i} sizeRange={this.imgSizes} 
+								 onChange={this.onImgChange} onSizeChange={this.onSizeChange} 
+								 onLangChange={this.onLangChange} onDelete={this.onDelete} 
+								 src={this.contentDirectory + elem.content + this.size} loadingSrc='/img/loading.gif' {...elem} />
+							} else if(elem.type == 'video') {
+								return <VideoElem key={elem.id} index={i} sizeRange={this.imgSizes} 
+								 onChange={this.onVideoChange} onSizeChange={this.onSizeChange} 
+								 onLangChange={this.onLangChange} onDelete={this.onDelete} 
+								 src={elem.content} loadingSrc='/img/loading.gif' videoFormats={this.videoFormats} {...elem} />
+							}
 					 	}.bind(this))
 					}
 				</DraggableList>
@@ -162,51 +203,4 @@ var PageList = React.createClass({
 	}
 });
 
-var DraggableList = React.createClass({
-	dragstart: function(e) {
-		this.$elem = $(e.target);
-	},
-
-	dragover: function(e) {
-		if(this.$elem) {
-			var thisRect = e.target.getBoundingClientRect();
-			if(e.clientY < thisRect['top'] + 0.5 * thisRect['height']) {
-				$(e.target).before(this.$elem);
-			} else {
-				$(e.target).after(this.$elem);					
-			}
-			console.log('drag over');
-			this.props.onDrag(e.target.id, $(e.target).index());
-		}
-	},
-
-	dragend: function() {
-		// this.props.onReOrder(this.$elem.id, this.$elem.index());
-		if(this.$elem) {
-			if(this.props.onDrop) {
-				this.props.onDrop();
-			}
-			this.$elem = null;
-		}
-	},
-	render: function() {		
-		var className = (this.props.selected) ? 'contentList selected' : 'contentList';
-
-		//Add drag event props to children
-		const childrenWithProps = React.Children.map(this.props.children,
-			(child) => React.cloneElement(child, {
-				onDragStart: this.dragstart,
-				onDragOver: this.dragover,
-				onDragEnd: this.dragend,
-				draggable: 'true'
-			})
-	    );
-		return(
-			<div className='children'>{childrenWithProps}</div>
-		)
-	}
-});
-
-
-ReactDOM.render(<Page />, document.getElementById('container'));
-
+ReactDOM.render(<PageWrapper />, document.getElementById('container'));

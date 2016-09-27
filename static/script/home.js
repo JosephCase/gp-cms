@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
@@ -51,6 +51,8 @@
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+	var DraggableList = __webpack_require__(1);
 
 	var Content = React.createClass({
 		displayName: "Content",
@@ -208,7 +210,7 @@
 		//validate props
 		//handle click
 		click: function click() {
-			window.location.href = '/react/page.html?id=' + this.props.id;
+			window.location.href = '/page?id=' + this.props.id;
 		},
 
 		render: function render() {
@@ -226,7 +228,7 @@
 			var className = this.props.visible ? this.props.className : this.props.className + ' hidden';
 			return React.createElement(
 				"h5",
-				_extends({}, other, { className: className, onClick: this.click }),
+				_extends({}, this.props.dragProps, { className: className, onClick: this.click }),
 				this.props.name
 			);
 		}
@@ -266,9 +268,27 @@
 		}
 	});
 
-	var DraggableList = React.createClass({
-		displayName: "DraggableList",
+	ReactDOM.render(React.createElement(Content, null), document.getElementById('container'));
 
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	// For this to work you need to add {...this.props.dragProps} to the childrens root node in their render method
+
+	var DraggableList = React.createClass({
+		displayName: 'DraggableList',
+
+		propTypes: {
+			onReOrder: React.PropTypes.func.isRequired,
+			onDrop: React.PropTypes.func,
+			className: React.PropTypes.string
+		},
+		defaultProps: {
+			className: ''
+		},
 		dragstart: function dragstart(index, e) {
 			e.target.style.opacity = 0.5;
 			this.draggedIndex = index;
@@ -296,26 +316,28 @@
 		render: function render() {
 			var _this = this;
 
-			var className = this.props.selected ? 'contentList selected' : 'contentList';
+			console.log(this.props.children);
 
 			//Add drag event props to children
 			var childrenWithProps = React.Children.map(this.props.children, function (child, index) {
 				return React.cloneElement(child, {
-					onDragStart: _this.dragstart.bind(_this, index), //	child.key?	||	
-					onDragOver: _this.dragover.bind(_this, index), //	child.key?	||	
-					onDragEnd: _this.dragend,
-					draggable: 'true'
+					dragProps: {
+						onDragStart: _this.dragstart.bind(_this, index), //	child.key?	||	
+						onDragOver: _this.dragover.bind(_this, index), //	child.key?	||	
+						onDragEnd: _this.dragend,
+						draggable: 'true'
+					}
 				});
 			});
 			return React.createElement(
-				"div",
-				{ className: "children" },
+				'div',
+				{ className: this.props.className },
 				childrenWithProps
 			);
 		}
 	});
 
-	ReactDOM.render(React.createElement(Content, null), document.getElementById('container'));
+	module.exports = DraggableList;
 
 /***/ }
 /******/ ]);

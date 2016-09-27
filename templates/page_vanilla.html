@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" href="css/theme.css">
+		<link rel="stylesheet" type="text/css" href="css/page.css">
+		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+		<script type='text/javascript' src='/script/toolbox.js'></script>
+		<script type='text/javascript' src='/script/DOM.js'></script>
+		<script type='text/javascript' src='/script/Server.js'></script>
+	</head>
+	<body>
+
+		<input id='newPage' type='hidden' value={{page.newPage}} />
+		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
+		<input id='pageId' type='hidden' value={{page.id}} />
+		
+		<div class='controls'>
+
+			<h4><a href="../">< Home</a></h4>
+			<div id='pageDetails'>
+				<input id='pageName' type='text' value='{{ page.name }}' placeholder="Page name" />
+				<p class='errorMsg'>Please enter a page name</p>
+				{% if page.parentPage_id %}
+					<div id='mainImage'>
+						<img src="{{ contentDirectory + page.mainImage_url.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
+						<input type="file" class='hidden' accept="image/*" />
+					</div>
+				{% endif %}
+				<p>Show: <input id='show' type="checkbox"{% if page.visible %} checked{% endif %}></p>
+			</div>
+			<p id="add_text" class='btn'>Add text</p>
+			<p id="add_image" class='btn'>Add Images</p>
+			<input type="file" id="imageInput" class='hidden' multiple accept="image/*" />
+			<p id="add_video" class='btn'>Add Video</p>
+			<input type="file" id="videoInput" class='hidden' multiple accept="video/*" />
+			<p id="update" class='btn'>Save</p>	
+		</div>
+
+		
+		<div class='contentList'>
+			{% for content in pageContent %}
+			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
+				  	{% if content.type == 'text' %}
+				  		<textarea draggable="true">{{ content.content }}</textarea>
+				  		{% set sizeRange = [12,13,14,15,16,17,18] %}
+				  	{% elseif content.type == 'img' %}
+				  		<img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
+						<input type="file" class='hidden' accept="image/*" />
+				  		{% set sizeRange = [1,2,3,4] %}
+				  	{% elseif content.type == 'video' %}
+				  		<video controls>
+							{% for format in videoFormats %}
+				  				<source src="{{ contentDirectory + content.content + '.' + format.ext }}" type="video/{{format.ext}}">
+							{% endfor %}
+				  		</video>
+						<input type="file" class='hidden' accept="video/*" />
+				  		{% set sizeRange = [1,2,3,4] %}	  		
+			  		{% endif %}
+
+		  			<span>Size</span>
+			  		<select class='size'>
+			  			{% for size in sizeRange %}
+			  				{% if size == content.size %}
+			  					<option selected value='{{ size }}'>{{ size }}</option>
+			  				{% else %}
+			  					<option value='{{ size }}'>{{ size }}</option>
+					  		{% endif %}
+			  			{% endfor %}
+			  		</select>
+
+			  		<span>Language</span>
+			  		<select class='lang'>
+			  			<option {% if content.language == 'NULL' %}selected {% endif %}value='NULL'>All</option>
+			  			<option {% if content.language == 'eng' %}selected {% endif %}value='eng'>English</option>
+			  			<option {% if content.language == 'ita' %}selected {% endif %}value='ita'>Italian</option>
+			  		</select>
+			  		<span class="delete"></span>
+				 </div>
+			{% endfor %}
+		</div>
+		
+		<div id='loader'></div>
+
+	</body>
+</html>
+
+
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" href="css/theme.css">
+		<link rel="stylesheet" type="text/css" href="css/page.css">
+		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
+		<script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
+	    <script src="https://unpkg.com/react@15.3.1/dist/react.js"></script>
+		<script src="https://unpkg.com/react-dom@15.3.1/dist/react-dom.js"></script>
+	    <script type="text/babel" src="page.jsx"></script>
+	    <script id='contentJSON' type="application/json">{{JSON.stringify(content)}}</script>
+	</head>
+	<body>
+
+		<input id='newPage' type='hidden' value={{page.newPage}} />
+		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
+		<input id='pageId' type='hidden' value={{page.id}} />
+		<div id='container'></div>
+
+	</body>
+</html>

@@ -253,15 +253,15 @@ function updatePageContent(oContent, files, all_done_callback) {
 
 	for(var propertyName in oContent) {
 		(function(content, file){
-			if(content.action === 'edit') {
+			if(content.instruction === 'edit') {
 				tasks.push(function(callback) {
 					edit_content(content, file, callback);
 				})
-			} else if(content.action === 'delete') {
+			} else if(content.instruction === 'delete') {
 				tasks.push(function(callback) {
 					delete_content(content, callback);
 				})
-			} else if(content.action === 'add') {
+			} else if(content.instruction === 'add') {
 				if(content.type == 'img' || content.type == 'video') {
 					tasks.push(function(callback) {
 						add_file(content, file, callback);
@@ -272,7 +272,7 @@ function updatePageContent(oContent, files, all_done_callback) {
 					})
 				}
 			} else {
-				console.log('Unrecognised action: ' + content.action);
+				console.log('Unrecognised instruction: ' + content.instruction);
 			}
 		}(oContent[propertyName], files[propertyName]));
 
@@ -284,10 +284,12 @@ function updatePageContent(oContent, files, all_done_callback) {
 
 function edit_content(obj, file, callback) {
 
+	console.log(obj, file, callback);
+
 	db.connection.query( 
 		"UPDATE content SET content=COALESCE(?,content), size=COALESCE(?,size), language=COALESCE(?,language), position=COALESCE(?,position) WHERE id=?;" +
 		"select content from content where id = ?", //this is only useful when editing a file
-		[obj.data, obj.size, obj.lang, obj.position, obj.id, obj.id],
+		[obj.content, obj.size, obj.language, obj.position, obj.id, obj.id],
 		function (err, results) {
 			if(err) {
 				console.log(err);
@@ -325,12 +327,11 @@ function delete_content(obj, callback) {
 
 function add_content(obj, callback) {
 
-	console.log(obj.type, obj.data, obj.size, obj.lang, obj.position, pageId);
 
 	db.connection.query( 
 		'INSERT INTO content' +
 			" VALUES (NULL, ?, ?, ?, ?, ?, ?)",
-		[obj.type, obj.data, obj.size, obj.lang, obj.position, pageId],
+		[obj.type, obj.content, obj.size, obj.language, obj.position, pageId],
 		callback
 	);
 }
@@ -341,7 +342,7 @@ function add_file(obj, file, callback) {
 		"INSERT INTO content VALUES (NULL, ?, '', ?, ?, ?, ?);" +
 		"UPDATE content set content = CONCAT('file_', LAST_INSERT_ID(), ?) where id = LAST_INSERT_ID();" +
 		"SELECT content from content where id = LAST_INSERT_ID()",
-		[obj.type, obj.size, obj.lang, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '')],
+		[obj.type, obj.size, obj.language, obj.position, pageId, ((obj.type == 'img') ? '.jpg' : '')],
 		function (err, results) {
 			if(err) {
 				console.log(err);

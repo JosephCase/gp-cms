@@ -1,3 +1,6 @@
+var DraggableList = require('./draggableList.jsx');
+
+
 var Content = React.createClass({
 	sectionClick: function(sectionId) {
 		this.setState({
@@ -146,7 +149,7 @@ var Page = React.createClass({
 	//validate props
 	//handle click
 	click: function() {
-		window.location.href = '/react/page.html?id=' + this.props.id;
+		window.location.href = '/page?id=' + this.props.id;
 	},
 	
 	render: function() {
@@ -154,7 +157,7 @@ var Page = React.createClass({
 		console.log(...other);
 		var className = this.props.visible ? this.props.className : this.props.className + ' hidden';
 		return(
-			<h5 {...other} className={className} onClick={this.click}>{this.props.name}</h5>
+			<h5 {...this.props.dragProps} className={className} onClick={this.click}>{this.props.name}</h5>
 		)
 	}
 });
@@ -186,51 +189,6 @@ var PageList = React.createClass({
 		)
 	}
 });
-
-var DraggableList = React.createClass({
-	dragstart: function(index, e) {
-		e.target.style.opacity = 0.5;
-		this.draggedIndex = index;
-	},
-
-	dragover: function(index, e) {
-		if(this.draggedIndex != null) {
-			var thisRect = e.target.getBoundingClientRect();
-			if((e.clientY < thisRect['top'] + 0.5 * thisRect['height'] && this.draggedIndex > index) 
-			|| (e.clientY >= thisRect['top'] + 0.5 * thisRect['height'] && this.draggedIndex < index)) {
-				this.props.onReOrder(this.draggedIndex, index);
-				this.draggedIndex = index;		
-			}
-		}
-	},
-
-	dragend: function(e) {
-		if(this.draggedIndex != null) {
-			e.target.style.opacity = 1;
-			this.draggedIndex = null;
-		}
-		if(this.props.onDrop) {
-			this.props.onDrop();
-		}
-	},
-	render: function() {		
-		var className = (this.props.selected) ? 'contentList selected' : 'contentList';
-
-		//Add drag event props to children
-		const childrenWithProps = React.Children.map(this.props.children,
-			(child, index) => React.cloneElement(child, {
-				onDragStart: this.dragstart.bind(this, index), //	child.key?	||	
-				onDragOver: this.dragover.bind(this, index), //	child.key?	||	
-				onDragEnd: this.dragend,
-				draggable: 'true'
-			})
-	    );
-		return(
-			<div className='children'>{childrenWithProps}</div>
-		)
-	}
-});
-
 
 ReactDOM.render(<Content />, document.getElementById('container'));
 

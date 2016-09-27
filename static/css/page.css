@@ -80,13 +80,13 @@ img:hover {
     cursor: pointer; 
 }*/
 
-.content.edited {
+.content.edit {
 	border: 2px dashed #1565C0;	
 }
-.content.new {
+.content.add {
 	border: 2px dashed green;	
 }
-.content.deleted {
+.content.delete {
 	border: 2px dashed red;	
 }
 
