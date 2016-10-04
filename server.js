@@ -10,6 +10,7 @@ var app = express();
 //static files
 app.use(express.static(__dirname + '/static'));
 app.use('/content', express.static(__dirname + '/content'));
+app.use(express.static(__dirname + '/content'));
 
 //session check
 app.use(cookieParser("'verde_speranza'"));

@@ -3,9 +3,9 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        login: './static/jsx/login.jsx',
-        home: './static/jsx/home.jsx',
-        page: './static/jsx/page.jsx'
+        login: './jsx/login.jsx',
+        home: './jsx/home.jsx',
+        page: './jsx/page.jsx'
     },
     output: { path: path.join(__dirname, 'static/script/'), filename: '[name].js' },
     module: {

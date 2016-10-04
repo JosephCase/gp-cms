@@ -29,13 +29,16 @@ function getPage(request, response) {
 }
 
 function getExistingPage(response) {
+
+	var imageExt = '_x' + config.imageSizes[0] + '.jpg';
+
 	db.connection.query(
-		"SELECT name, mainImage_url, id, parentPage_id, visible FROM page where id = ?;" +
-		'SELECT content.* FROM page' + 
+		"SELECT name, CONCAT(mainImage_url, ?), id, parentPage_id, visible FROM page where id = ?;" +
+		"SELECT content.id, IF(content.type = 'img', REPLACE(content, '.jpg', ?), content) as content, content.type, content.size, content.language, content.position FROM page" + 
 	    	' inner join content' + 
 				' on content.page_id = page.id and page.id = ?' +
 				' ORDER BY position',
-		[pageId, pageId],
+		[imageExt, pageId, imageExt, pageId],
 		function (err, results, fields) {
 			if(err) {
 				console.log(err);
@@ -247,11 +250,11 @@ function updatePageDetails(pageName, mainImage, visible, parent_callback) {
 // update the content within the page
 function updatePageContent(oContent, files, all_done_callback) {
 
-	console.log(oContent);
-
 	var tasks = [];
 
-	for(var propertyName in oContent) {
+	// loop through the list of elements and act depending on their instruction
+	for (var i = 0; i < oContent.length; i++) {
+		console.log(oContent[i], files[oContent[i].id]);
 		(function(content, file){
 			if(content.instruction === 'edit') {
 				tasks.push(function(callback) {
@@ -274,8 +277,7 @@ function updatePageContent(oContent, files, all_done_callback) {
 			} else {
 				console.log('Unrecognised instruction: ' + content.instruction);
 			}
-		}(oContent[propertyName], files[propertyName]));
-
+		}(oContent[i], files[oContent[i].id]));
 	}
 
 	async.parallel(tasks, all_done_callback);
@@ -287,7 +289,7 @@ function edit_content(obj, file, callback) {
 	console.log(obj, file, callback);
 
 	db.connection.query( 
-		"UPDATE content SET content=COALESCE(?,content), size=COALESCE(?,size), language=COALESCE(?,language), position=COALESCE(?,position) WHERE id=?;" +
+		"UPDATE content SET content = IF(type != 'text', content, COALESCE(?,content)), size=COALESCE(?,size), language=COALESCE(?,language), position=COALESCE(?,position) WHERE id=?;" +
 		"select content from content where id = ?", //this is only useful when editing a file
 		[obj.content, obj.size, obj.language, obj.position, obj.id, obj.id],
 		function (err, results) {

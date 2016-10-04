@@ -4,17 +4,12 @@ var TextElem = require('./Elems.jsx').TextElem;
 var ImgElem = require('./Elems.jsx').ImgElem;
 var VideoElem = require('./Elems.jsx').VideoElem;
 
-
-
-
-
 var PageWrapper = React.createClass({
 
-	textSizes: [1,2,3,4,5],	
+	textSizes: [10,11,12,13,14,15,16,17,18,19,20],	
 	imgSizes: [1,2,3,4],
 	videoFormats: [{ext: 'webm'}, {ext: 'mp4'}],
-	contentDirectory: 'content/',
-	size: '_x500',
+	elemsAdded: 0,
 
 	getInitialState: function() {
 		return({
@@ -27,61 +22,23 @@ var PageWrapper = React.createClass({
 
 		var content = JSON.parse($("#contentJSON").html());
 
-		console.log(content);
-
 		this.setState({
 			elements: content
 		})
 	},
 
-	onChangeText: function(index, newElem) {
+	onChange: function(index, newElem) {
 		var newElems = this.state.elements;
 		newElems[index] = newElem;
 		this.setState({
 			elements: newElems
 		});
 	},
-	onImgChange(index, value, file) {
-		var newElems = this.state.elements;
-		// newElems[index].content = value;
-		newElems[index].instruction = 'edit';
+	uploadFile(id, file) {
 
 		// add the file to the form data object, with the element id so that it can be referenced by the element on the server
-		this.formData.set(newElems[index].id, file);
+		this.formData.set(id, file);
 
-		this.setState({
-			elements: newElems
-		});
-	},
-	onVideoChange(index, file) {
-		var newElems = this.state.elements;
-		newElems[index].content = '';
-		newElems[index].newVideo = index;
-		newElems[index].instruction = 'edit';
-
-		// add the file to the form data object, with the element id so that it can be referenced by the element on the server
-		this.formData.set(newElems[index].id, file);
-
-		this.setState({
-			elements: newElems
-		});
-	},
-	onSizeChange: function(index, value) {
-		console.log(index);
-		var newElems = this.state.elements;
-		newElems[index].size = value;
-		newElems[index].instruction = 'edit';
-		this.setState({
-			elements: newElems
-		});
-	},
-	onLangChange: function(index, value) {
-		var newElems = this.state.elements;
-		newElems[index].language = value;
-		newElems[index].instruction = 'edit';
-		this.setState({
-			elements: newElems
-		});
 	},
 	onReOrderElems: function(index1, index2) {
 		var newElems = this.state.elements;
@@ -93,38 +50,20 @@ var PageWrapper = React.createClass({
 
 		// explicitly set a new index property equal to the new index
 		newElems[index1].position = index1;
-		newElems[index1].instruction = 'edit';
+		// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
+		if(!newElems[index1].instruction) {
+			newElems[index1].instruction = 'edit';
+		}
 
 		newElems[index2].position = index2;
-		newElems[index2].instruction = 'edit';
+		// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
+		if(!newElems[index2].instruction) {
+			newElems[index2].instruction = 'edit';
+		}
 
 		this.setState({
 			elements: newElems
 		})
-	},
-	onDelete: function(index) {
-		var newElems = this.state.elements;
-		if (newElems[index].instruction == 'delete') {	//toggle the delete off
-
-			//if there's an old instruction re-instate this, otherwise remove the instruction 
-			if(newElems[index].instruction_old) {
-				newElems[index].instruction = newElems[index].instruction_old;
-				delete newElems[index].instruction_old;
-			} else {
-				delete newElems[index].instruction;
-			}
-
-		} else if (newElems[index].instruction == 'edit') {	//replace edit instruction but remember it incase we revert
-			newElems[index].instruction_old = newElems[index].instruction;
-			newElems[index].instruction = 'delete';
-		} else if (newElems[index].instruction == 'add') {	//if it's new just remove it
-			newElems.splice(index, 1);
-		} else {
-			newElems[index].instruction = 'delete';
-		}
-		this.setState({
-			elements: newElems
-		});
 	},
 
 	getContent: function() {
@@ -133,8 +72,32 @@ var PageWrapper = React.createClass({
 
 	// Add text element
 	addText: function() {
-
+		var newElem = {
+			id: 'n' + this.elemsAdded,
+			type: 'text',
+			content: '',
+			size: 16,
+			language: 'NULL',
+			instruction: 'add',
+			position: this.state.elements.length
+		}
+		var newElems = this.state.elements;
+		newElems.push(newElem);
+		console.log(newElems)
+		this.setState({
+			elements: newElems
+		});
+		this.elemsAdded += 1;
 	},
+
+	id: React.PropTypes.number.isRequired,
+			content: React.PropTypes.string.isRequired,
+			size: React.PropTypes.oneOfType([
+				React.PropTypes.string,
+				React.PropTypes.number
+			]),
+			language: React.PropTypes.string.isRequired,
+			instruction: React.PropTypes.string,
 
 	//Submit changes
 	submit: function() {
@@ -147,7 +110,7 @@ var PageWrapper = React.createClass({
 		var pageId = document.getElementById('pageId').value;
 		this.formData.set('pageId', pageId);
 
-		this.formData.append('content', JSON.stringify(changes));
+		this.formData.set('content', JSON.stringify(changes));
 
 		var method = "PATCH";	//hardcode to edit
 
@@ -182,18 +145,16 @@ var PageWrapper = React.createClass({
 						this.state.elements.map(function(elem, i) {
 							if(elem.type == 'text') {
 								return <TextElem key={elem.id} index={i} sizeRange={this.textSizes} 
-								 onChange={this.onChangeText} onSizeChange={this.onSizeChange} 
-								 onLangChange={this.onLangChange} onDelete={this.onDelete} elemDesc={elem} />
+								 onChange={this.onChange} elemDesc={elem} />
 							} else if(elem.type == 'img') {
 								return <ImgElem key={elem.id} index={i} sizeRange={this.imgSizes} 
-								 onChange={this.onImgChange} onSizeChange={this.onSizeChange} 
-								 onLangChange={this.onLangChange} onDelete={this.onDelete} 
-								 src={this.contentDirectory + elem.content + this.size} loadingSrc='/img/loading.gif' {...elem} />
+								 onChange={this.onChange} onFileUpload={this.uploadFile}
+							     loadingSrc='/img/loading.gif' elemDesc={elem} />
 							} else if(elem.type == 'video') {
 								return <VideoElem key={elem.id} index={i} sizeRange={this.imgSizes} 
-								 onChange={this.onVideoChange} onSizeChange={this.onSizeChange} 
-								 onLangChange={this.onLangChange} onDelete={this.onDelete} 
-								 src={elem.content} loadingSrc='/img/loading.gif' videoFormats={this.videoFormats} {...elem} />
+								 onChange={this.onChange} onFileUpload={this.uploadFile}
+								 loadingSrc='/img/loading.gif' videoFormats={this.videoFormats} 
+								 videoPlaceholder='/img/video.png' elemDesc={elem} />
 							}
 					 	}.bind(this))
 					}

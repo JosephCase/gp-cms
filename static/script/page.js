@@ -46,8 +46,6 @@
 
 	'use strict';
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 	var DraggableList = __webpack_require__(1);
 
 	var TextElem = __webpack_require__(2).TextElem;
@@ -58,11 +56,10 @@
 		displayName: 'PageWrapper',
 
 
-		textSizes: [1, 2, 3, 4, 5],
+		textSizes: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
 		imgSizes: [1, 2, 3, 4],
 		videoFormats: [{ ext: 'webm' }, { ext: 'mp4' }],
-		contentDirectory: 'content/',
-		size: '_x500',
+		elemsAdded: 0,
 
 		getInitialState: function getInitialState() {
 			return {
@@ -75,63 +72,24 @@
 
 			var content = JSON.parse($("#contentJSON").html());
 
-			console.log(content);
-
 			this.setState({
 				elements: content
 			});
 		},
 
-		onChangeText: function onChangeText(index, newElem) {
+		onChange: function onChange(index, newElem) {
 			var newElems = this.state.elements;
 			newElems[index] = newElem;
 			this.setState({
 				elements: newElems
 			});
 		},
-		onImgChange: function onImgChange(index, value, file) {
-			var newElems = this.state.elements;
-			// newElems[index].content = value;
-			newElems[index].instruction = 'edit';
+		uploadFile: function uploadFile(id, file) {
 
 			// add the file to the form data object, with the element id so that it can be referenced by the element on the server
-			this.formData.set(newElems[index].id, file);
-
-			this.setState({
-				elements: newElems
-			});
-		},
-		onVideoChange: function onVideoChange(index, file) {
-			var newElems = this.state.elements;
-			newElems[index].content = '';
-			newElems[index].newVideo = index;
-			newElems[index].instruction = 'edit';
-
-			// add the file to the form data object, with the element id so that it can be referenced by the element on the server
-			this.formData.set(newElems[index].id, file);
-
-			this.setState({
-				elements: newElems
-			});
+			this.formData.set(id, file);
 		},
 
-		onSizeChange: function onSizeChange(index, value) {
-			console.log(index);
-			var newElems = this.state.elements;
-			newElems[index].size = value;
-			newElems[index].instruction = 'edit';
-			this.setState({
-				elements: newElems
-			});
-		},
-		onLangChange: function onLangChange(index, value) {
-			var newElems = this.state.elements;
-			newElems[index].language = value;
-			newElems[index].instruction = 'edit';
-			this.setState({
-				elements: newElems
-			});
-		},
 		onReOrderElems: function onReOrderElems(index1, index2) {
 			var newElems = this.state.elements;
 
@@ -142,37 +100,17 @@
 
 			// explicitly set a new index property equal to the new index
 			newElems[index1].position = index1;
-			newElems[index1].instruction = 'edit';
+			// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
+			if (!newElems[index1].instruction) {
+				newElems[index1].instruction = 'edit';
+			}
 
 			newElems[index2].position = index2;
-			newElems[index2].instruction = 'edit';
-
-			this.setState({
-				elements: newElems
-			});
-		},
-		onDelete: function onDelete(index) {
-			var newElems = this.state.elements;
-			if (newElems[index].instruction == 'delete') {
-				//toggle the delete off
-
-				//if there's an old instruction re-instate this, otherwise remove the instruction 
-				if (newElems[index].instruction_old) {
-					newElems[index].instruction = newElems[index].instruction_old;
-					delete newElems[index].instruction_old;
-				} else {
-					delete newElems[index].instruction;
-				}
-			} else if (newElems[index].instruction == 'edit') {
-				//replace edit instruction but remember it incase we revert
-				newElems[index].instruction_old = newElems[index].instruction;
-				newElems[index].instruction = 'delete';
-			} else if (newElems[index].instruction == 'add') {
-				//if it's new just remove it
-				newElems.splice(index, 1);
-			} else {
-				newElems[index].instruction = 'delete';
+			// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
+			if (!newElems[index2].instruction) {
+				newElems[index2].instruction = 'edit';
 			}
+
 			this.setState({
 				elements: newElems
 			});
@@ -181,7 +119,30 @@
 		getContent: function getContent() {},
 
 		// Add text element
-		addText: function addText() {},
+		addText: function addText() {
+			var newElem = {
+				id: 'n' + this.elemsAdded,
+				type: 'text',
+				content: '',
+				size: 16,
+				language: 'NULL',
+				instruction: 'add',
+				position: this.state.elements.length
+			};
+			var newElems = this.state.elements;
+			newElems.push(newElem);
+			console.log(newElems);
+			this.setState({
+				elements: newElems
+			});
+			this.elemsAdded += 1;
+		},
+
+		id: React.PropTypes.number.isRequired,
+		content: React.PropTypes.string.isRequired,
+		size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
+		language: React.PropTypes.string.isRequired,
+		instruction: React.PropTypes.string,
 
 		//Submit changes
 		submit: function submit() {
@@ -194,7 +155,7 @@
 			var pageId = document.getElementById('pageId').value;
 			this.formData.set('pageId', pageId);
 
-			this.formData.append('content', JSON.stringify(changes));
+			this.formData.set('content', JSON.stringify(changes));
 
 			var method = "PATCH"; //hardcode to edit
 
@@ -247,18 +208,16 @@
 					this.state.elements.map(function (elem, i) {
 						if (elem.type == 'text') {
 							return React.createElement(TextElem, { key: elem.id, index: i, sizeRange: this.textSizes,
-								onChange: this.onChangeText, onSizeChange: this.onSizeChange,
-								onLangChange: this.onLangChange, onDelete: this.onDelete, elemDesc: elem });
+								onChange: this.onChange, elemDesc: elem });
 						} else if (elem.type == 'img') {
-							return React.createElement(ImgElem, _extends({ key: elem.id, index: i, sizeRange: this.imgSizes,
-								onChange: this.onImgChange, onSizeChange: this.onSizeChange,
-								onLangChange: this.onLangChange, onDelete: this.onDelete,
-								src: this.contentDirectory + elem.content + this.size, loadingSrc: '/img/loading.gif' }, elem));
+							return React.createElement(ImgElem, { key: elem.id, index: i, sizeRange: this.imgSizes,
+								onChange: this.onChange, onFileUpload: this.uploadFile,
+								loadingSrc: '/img/loading.gif', elemDesc: elem });
 						} else if (elem.type == 'video') {
-							return React.createElement(VideoElem, _extends({ key: elem.id, index: i, sizeRange: this.imgSizes,
-								onChange: this.onVideoChange, onSizeChange: this.onSizeChange,
-								onLangChange: this.onLangChange, onDelete: this.onDelete,
-								src: elem.content, loadingSrc: '/img/loading.gif', videoFormats: this.videoFormats }, elem));
+							return React.createElement(VideoElem, { key: elem.id, index: i, sizeRange: this.imgSizes,
+								onChange: this.onChange, onFileUpload: this.uploadFile,
+								loadingSrc: '/img/loading.gif', videoFormats: this.videoFormats,
+								videoPlaceholder: '/img/video.png', elemDesc: elem });
 						}
 					}.bind(this))
 				)
@@ -288,6 +247,7 @@
 			className: ''
 		},
 		dragstart: function dragstart(index, e) {
+			console.log('elem drag');
 			e.target.style.opacity = 0.5;
 			this.draggedIndex = index;
 		},
@@ -343,22 +303,56 @@
 
 	'use strict';
 
-	var _ref;
-
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	// Mixins
 	var ElemMixin = {
 		onSizeChange: function onSizeChange(e) {
-			this.props.onSizeChange(this.props.index, e.target.value);
+			var newDesc = this.props.elemDesc;
+
+			//change descriptions value and instruction
+			newDesc.size = e.target.value;
+			if (newDesc.instruction != 'add') {
+				newDesc.instruction = 'edit';
+			}
+
+			this.props.onChange(this.props.index, newDesc);
 		},
 		onLangChange: function onLangChange(e) {
-			this.props.onLangChange(this.props.index, e.target.value);
+			var newDesc = this.props.elemDesc;
+
+			//change descriptions value and instruction
+			newDesc.language = e.target.value;
+			if (newDesc.instruction != 'add') {
+				newDesc.instruction = 'edit';
+			}
+
+			this.props.onChange(this.props.index, newDesc);
 		},
 		onDelete: function onDelete() {
-			this.props.onDelete(this.props.index);
+			var newDesc = this.props.elemDesc;
+
+			if (newDesc.instruction == 'delete') {
+				//toggle the delete off
+
+				//if there's an old instruction re-instate this, otherwise remove the instruction 
+				if (newDesc.instruction_old) {
+					newDesc.instruction = newDesc.instruction_old;
+					delete newDesc.instruction_old;
+				} else {
+					newDesc.instruction;
+				}
+			} else if (newDesc.instruction == 'edit') {
+				//replace edit instruction but remember it incase we revert
+				newDesc.instruction_old = newDesc.instruction;
+				newDesc.instruction = 'delete';
+				// } else if (newElems[index].instruction == 'add') {	//if it's new just remove it
+				// newElems.splice(index, 1);
+			} else {
+				newDesc.instruction = 'delete';
+			}
+
+			this.props.onChange(this.props.index, newDesc);
 		}
 	};
 	// <img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
@@ -377,11 +371,7 @@
 			}).isRequired,
 
 			sizeRange: React.PropTypes.array.isRequired,
-
-			onChange: React.PropTypes.func.isRequired,
-			onSizeChange: React.PropTypes.func.isRequired,
-			onLangChange: React.PropTypes.func.isRequired,
-			onDelete: React.PropTypes.func.isRequired
+			onChange: React.PropTypes.func.isRequired
 
 		},
 		onChange: function onChange(e) {
@@ -389,16 +379,29 @@
 
 			//change descriptions value and instruction
 			newDesc.content = e.target.value;
-			newDesc.instruction = 'edit';
+			if (newDesc.instruction != 'add') {
+				newDesc.instruction = 'edit';
+			}
 
 			this.props.onChange(this.props.index, newDesc);
+		},
+		componentDidMount: function componentDidMount() {
+			console.log(this.props.elemDesc.instruction);
+			if (this.props.elemDesc.instruction == 'add') {
+				console.log('set the focus');
+				console.log(this.refs);
+				ReactDOM.findDOMNode(this.refs.textArea).focus();
+			}
+		},
+		//this stops the text area being draggable and therefor highlightable
+		preventDefault: function preventDefault(e) {
+			e.preventDefault();
+			e.stopPropagation();
 		},
 
 		render: function render() {
 
 			var elemDesc = this.props.elemDesc;
-
-			console.log(elemDesc);
 
 			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
 			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
@@ -408,7 +411,7 @@
 			return React.createElement(
 				'div',
 				_extends({ className: className }, this.props.dragProps),
-				React.createElement('textarea', { value: elemDesc.content, onChange: this.onChange }),
+				React.createElement('textarea', { ref: 'textArea', value: elemDesc.content, onChange: this.onChange, draggable: 'true', onDragStart: this.preventDefault }),
 				React.createElement(SizeSelect, { value: elemDesc.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
 				React.createElement(LangSelect, { value: elemDesc.language, onChange: this.onLangChange }),
 				React.createElement(
@@ -420,106 +423,117 @@
 		}
 	});
 
-	var ImgElem = new React.createClass((_ref = {
-		getInitialState: function getInitialState() {
-			return {
-				previewImg: null
-			};
-		},
+	var ImgElem = new React.createClass({
 		mixins: [ElemMixin],
 		propTypes: {
-			id: React.PropTypes.number.isRequired,
-			src: React.PropTypes.string.isRequired,
-			size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
+			elemDesc: React.PropTypes.shape({
+				id: React.PropTypes.number.isRequired,
+				content: React.PropTypes.string.isRequired,
+				size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
+				language: React.PropTypes.string.isRequired,
+				instruction: React.PropTypes.string
+			}).isRequired,
+
 			sizeRange: React.PropTypes.array.isRequired,
-			language: React.PropTypes.string.isRequired,
-			instruction: React.PropTypes.string,
 
 			onChange: React.PropTypes.func.isRequired,
-			onSizeChange: React.PropTypes.func.isRequired,
-			onLangChange: React.PropTypes.func.isRequired,
-			onDelete: React.PropTypes.func.isRequired
+			onFileUpload: React.PropTypes.func.isRequired
 
-		}
-	}, _defineProperty(_ref, 'getInitialState', function getInitialState() {
-		return {
-			loading: false
-		};
-	}), _defineProperty(_ref, 'onImgClick', function onImgClick(e) {
-		//the image acts as a psuedo input, when click, passed the click to the actual input
-		$(e.target).siblings('input.hidden').click();
-	}), _defineProperty(_ref, 'onChange', function onChange(e) {
+		},
+		getInitialState: function getInitialState() {
+			return {
+				tempImg: null
+			};
+		},
+		onImgClick: function onImgClick(e) {
+			//the image acts as a psuedo input, when click, passed the click to the actual input
+			$(e.target).siblings('input.hidden').click();
+		},
 
-		this.setState({
-			loading: true
-		});
+		onChange: function onChange(e) {
 
-		this.props.onChange(this.props.index, null, file);
-
-		var file = e.target.files[0];
-
-		var reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.onload = function (e) {
+			// show the loading gif while the image is loading for preview
 			this.setState({
-				previewImg: e.target.result
+				tempImg: this.props.loadingSrc
 			});
-		}.bind(this);
-	}), _defineProperty(_ref, 'render', function render() {
 
-		var className = this.props.instruction ? 'content ' + this.props.instruction : 'content';
-		var deleteText = this.props.instruction && this.props.instruction == 'delete' ? 'Undelete' : 'Delete';
+			//set the new instruction as edit
+			var newDesc = this.props.elemDesc;
+			newDesc.instruction = 'edit';
 
-		// the source can be one of 3 things
-		var src;
-		if (this.state.previewImg) {
-			//a newly uploaded or edited image
-			src = this.state.previewImg;
-		} else if (this.state.loading) {
-			//a loading gif for when the previewing image is rendering
-			src = this.props.loadingSrc;
-		} else {
-			//or the image passed down by props
-			src = this.props.src;
+			this.props.onChange(this.props.index, newDesc);
+
+			//send the new file
+			var file = e.target.files[0];
+			this.props.onFileUpload(newDesc.id, file);
+
+			//preview the newly uploaded image
+			var reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = function (e) {
+
+				this.setState({
+					tempImg: e.target.result
+				});
+			}.bind(this);
+		},
+
+		render: function render() {
+
+			var elemDesc = this.props.elemDesc;
+
+			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
+			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
+
+			// the source can be one of 3 things
+			var src;
+			if (this.state.tempImg) {
+				//a loading gif for when the previewing image is rendering
+				src = this.state.tempImg;
+			} else {
+				//or the image passed down by props
+				src = elemDesc.content;
+			}
+
+			// ...dragProps are those appended by the draggable list
+			return React.createElement(
+				'div',
+				_extends({ className: className }, this.props.dragProps),
+				React.createElement('img', { src: src, draggable: 'false', onClick: this.onImgClick }),
+				React.createElement('input', { type: 'file', className: 'hidden', accept: 'image/*', onChange: this.onChange }),
+				React.createElement(SizeSelect, { value: elemDesc.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
+				React.createElement(LangSelect, { value: elemDesc.language, onChange: this.onLangChange }),
+				React.createElement(
+					'span',
+					{ onClick: this.onDelete },
+					deleteText
+				)
+			);
 		}
-
-		// ...dragProps are those appended by the draggable list
-		return React.createElement(
-			'div',
-			_extends({ className: className }, this.props.dragProps),
-			React.createElement('img', { src: src, draggable: 'false', onClick: this.onImgClick }),
-			React.createElement('input', { type: 'file', className: 'hidden', accept: 'image/*', onChange: this.onChange }),
-			React.createElement(SizeSelect, { value: this.props.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
-			React.createElement(LangSelect, { value: this.props.language, onChange: this.onLangChange }),
-			React.createElement(
-				'span',
-				{ onClick: this.onDelete },
-				deleteText
-			)
-		);
-	}), _ref));
+	});
 
 	var VideoElem = new React.createClass({
 		mixins: [ElemMixin],
 		propTypes: {
-			id: React.PropTypes.number.isRequired,
-			src: React.PropTypes.string.isRequired,
-			size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
-			sizeRange: React.PropTypes.array.isRequired,
-			language: React.PropTypes.string.isRequired,
-			instruction: React.PropTypes.string,
+			elemDesc: React.PropTypes.shape({
+				id: React.PropTypes.number.isRequired,
+				content: React.PropTypes.string.isRequired,
+				size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
+				language: React.PropTypes.string.isRequired,
+				instruction: React.PropTypes.string
+			}).isRequired,
 
-			videoFormats: React.PropTypes.array.isRequired,
+			sizeRange: React.PropTypes.array.isRequired,
 
 			onChange: React.PropTypes.func.isRequired,
-			onSizeChange: React.PropTypes.func.isRequired,
-			onLangChange: React.PropTypes.func.isRequired,
-			onDelete: React.PropTypes.func.isRequired
+			onFileUpload: React.PropTypes.func.isRequired,
+
+			videoFormats: React.PropTypes.array.isRequired
 
 		},
 		getInitialState: function getInitialState() {
 			return {
-				loading: false
+				tempImg: null
 			};
 		},
 		onVidClick: function onVidClick(e) {
@@ -529,30 +543,46 @@
 
 		onChange: function onChange(e) {
 
+			// show the loading gif while the image is loading for preview
+			this.setState({
+				tempImg: this.props.loadingSrc
+			});
+
+			//set the new instruction as edit
+			var newDesc = this.props.elemDesc;
+			newDesc.instruction = 'edit';
+
+			this.props.onChange(this.props.index, newDesc);
+
+			//send the new file
 			var file = e.target.files[0];
-			this.props.onChange(this.props.index, file);
+			this.props.onFileUpload(newDesc.id, file);
+
+			//preview the video placeholder image
+			this.setState({
+				tempImg: this.props.videoPlaceholder
+			});
 		},
 
 		render: function render() {
 
-			console.log(this.props.src);
+			var elemDesc = this.props.elemDesc;
 
-			var className = this.props.instruction ? 'content ' + this.props.instruction : 'content';
-			var deleteText = this.props.instruction && this.props.instruction == 'delete' ? 'Undelete' : 'Delete';
-			var src = this.state.loading ? this.props.loadingSrc : this.props.src;
+			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
+			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
 
-			// ...dragProps are those appended by the draggable list
+			console.log(this.state.tempImg);
 
 			var displayElem;
 			// if it's a new video, it's too heavy on the DOM to preview, so just show a placeholder img
-			if (this.props.newVideo) {
-				displayElem = React.createElement('img', { src: '/img/video.png', onClick: this.onVidClick });
+			if (this.state.tempImg) {
+				displayElem = React.createElement('img', { src: this.state.tempImg, onClick: this.onVidClick });
 			} else {
 				displayElem = React.createElement(
 					'video',
 					{ controls: true, onClick: this.onVidClick },
 					this.props.videoFormats.map(function (format) {
-						return React.createElement('source', { key: format.ext, src: this.props.src + '.' + format.ext, type: 'video/' + format.ext });
+						return React.createElement('source', { key: format.ext, src: elemDesc.content + '.' + format.ext, type: 'video/' + format.ext });
 					}.bind(this))
 				);
 			}
@@ -562,8 +592,8 @@
 				_extends({ className: className }, this.props.dragProps),
 				displayElem,
 				React.createElement('input', { type: 'file', className: 'hidden', accept: 'video/*', onChange: this.onChange }),
-				React.createElement(SizeSelect, { value: this.props.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
-				React.createElement(LangSelect, { value: this.props.language, onChange: this.onLangChange }),
+				React.createElement(SizeSelect, { value: elemDesc.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
+				React.createElement(LangSelect, { value: elemDesc.language, onChange: this.onLangChange }),
 				React.createElement(
 					'span',
 					{ onClick: this.onDelete },

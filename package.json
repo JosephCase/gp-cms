@@ -13,6 +13,7 @@
     "fluent-ffmpeg": "",
     "formidable": "",
     "imagemagick": "",
+    "jasmine-node": "^1.14.5",
     "mysql": "",
     "path": "",
     "querystring": "",

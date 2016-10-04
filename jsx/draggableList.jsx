@@ -10,6 +10,7 @@ var DraggableList = React.createClass({
 		className: ''
 	},
 	dragstart: function(index, e) {
+		console.log('elem drag');
 		e.target.style.opacity = 0.5;
 		this.draggedIndex = index;
 	},
