@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -45,18 +45,18 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-
+	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
+	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
+	
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-
+	
 	var DraggableList = __webpack_require__(1);
-
+	
 	var Content = React.createClass({
 		displayName: "Content",
-
+	
 		sectionClick: function sectionClick(sectionId) {
 			this.setState({
 				selected: sectionId
@@ -75,10 +75,10 @@
 		getData: function getData() {
 			// get the content	    	
 			var content = JSON.parse($("#contentJSON").html());
-
+	
 			//set the first section as selected
 			var selected;
-
+	
 			if (this.state.selected == 0) {
 				//if nothings selected, select the first section
 				for (var i = 0; i < content.length; i++) {
@@ -97,18 +97,18 @@
 			});
 		},
 		reOrderPages: function reOrderPages(sectionIndex, index1, index2) {
-
+	
 			var newSections = this.state.sections;
-
+	
 			// swap the indexes
 			var swapTemp = newSections[sectionIndex].pages[index1];
 			newSections[sectionIndex].pages[index1] = newSections[sectionIndex].pages[index2];
 			newSections[sectionIndex].pages[index2] = swapTemp;
-
+	
 			// explicitly set a new index property equal to the new index
 			newSections[sectionIndex].pages[index1].newIndex = index1;
 			newSections[sectionIndex].pages[index2].newIndex = index2;
-
+	
 			this.setState({
 				sections: newSections
 			});
@@ -121,7 +121,7 @@
 			var reOrderedPages = this.state.sections[sectionIndex].pages.filter(function (page) {
 				return page.newIndex > -1;
 			});
-
+	
 			$.ajax({
 				type: "PUT",
 				url: "/",
@@ -161,10 +161,10 @@
 			);
 		}
 	});
-
+	
 	var Controls = React.createClass({
 		displayName: "Controls",
-
+	
 		render: function render() {
 			return React.createElement(
 				"div",
@@ -185,10 +185,10 @@
 			);
 		}
 	});
-
+	
 	var SectionSwitch = React.createClass({
 		displayName: "SectionSwitch",
-
+	
 		//validate props
 		//handle click
 		click: function click() {
@@ -203,27 +203,27 @@
 			);
 		}
 	});
-
+	
 	var Page = React.createClass({
 		displayName: "Page",
-
+	
 		//validate props
 		//handle click
 		click: function click() {
 			window.location.href = '/page?id=' + this.props.id;
 		},
-
+	
 		render: function render() {
 			var _console;
-
+	
 			var _props = this.props;
 			var visible = _props.visible;
 			var className = _props.className;
 			var name = _props.name;
-
+	
 			var other = _objectWithoutProperties(_props, ["visible", "className", "name"]); //destructure the props
-
-
+	
+	
 			(_console = console).log.apply(_console, _toConsumableArray(other));
 			var className = this.props.visible ? this.props.className : this.props.className + ' hidden';
 			return React.createElement(
@@ -233,10 +233,10 @@
 			);
 		}
 	});
-
+	
 	var PageList = React.createClass({
 		displayName: "PageList",
-
+	
 		addPage: function addPage() {
 			window.location.href = '/page?id=0&parent_id=' + this.props.id;
 		},
@@ -267,7 +267,7 @@
 			);
 		}
 	});
-
+	
 	ReactDOM.render(React.createElement(Content, null), document.getElementById('container'));
 
 /***/ },
@@ -275,12 +275,12 @@
 /***/ function(module, exports) {
 
 	'use strict';
-
+	
 	// For this to work you need to add {...this.props.dragProps} to the childrens root node in their render method
-
+	
 	var DraggableList = React.createClass({
 		displayName: 'DraggableList',
-
+	
 		propTypes: {
 			onReOrder: React.PropTypes.func.isRequired,
 			onDrop: React.PropTypes.func,
@@ -290,11 +290,10 @@
 			className: ''
 		},
 		dragstart: function dragstart(index, e) {
-			console.log('elem drag');
 			e.target.style.opacity = 0.5;
 			this.draggedIndex = index;
 		},
-
+	
 		dragover: function dragover(index, e) {
 			if (this.draggedIndex != null) {
 				var thisRect = e.target.getBoundingClientRect();
@@ -304,7 +303,7 @@
 				}
 			}
 		},
-
+	
 		dragend: function dragend(e) {
 			if (this.draggedIndex != null) {
 				e.target.style.opacity = 1;
@@ -316,9 +315,7 @@
 		},
 		render: function render() {
 			var _this = this;
-
-			console.log(this.props.children);
-
+	
 			//Add drag event props to children
 			var childrenWithProps = React.Children.map(this.props.children, function (child, index) {
 				return React.cloneElement(child, {
@@ -337,8 +334,9 @@
 			);
 		}
 	});
-
+	
 	module.exports = DraggableList;
 
 /***/ }
 /******/ ]);
+//# sourceMappingURL=home.js.map

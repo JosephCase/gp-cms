@@ -3,6 +3,7 @@ var DraggableList = require('./draggableList.jsx');
 var TextElem = require('./Elems.jsx').TextElem;
 var ImgElem = require('./Elems.jsx').ImgElem;
 var VideoElem = require('./Elems.jsx').VideoElem;
+var ImageUploadButton = require('./toolBox.jsx').ImageUploadButton;
 
 var PageWrapper = React.createClass({
 
@@ -34,10 +35,11 @@ var PageWrapper = React.createClass({
 			elements: newElems
 		});
 	},
-	uploadFile(id, file) {
+	changeFile(id, file) {
 
 		// add the file to the form data object, with the element id so that it can be referenced by the element on the server
 		this.formData.set(id, file);
+
 
 	},
 	onReOrderElems: function(index1, index2) {
@@ -83,21 +85,58 @@ var PageWrapper = React.createClass({
 		}
 		var newElems = this.state.elements;
 		newElems.push(newElem);
-		console.log(newElems)
 		this.setState({
 			elements: newElems
 		});
 		this.elemsAdded += 1;
 	},
 
-	id: React.PropTypes.number.isRequired,
-			content: React.PropTypes.string.isRequired,
-			size: React.PropTypes.oneOfType([
-				React.PropTypes.string,
-				React.PropTypes.number
-			]),
-			language: React.PropTypes.string.isRequired,
-			instruction: React.PropTypes.string,
+	addImages: function(images) {
+
+		var newElems = this.state.elements;
+
+		for (var i = 0; i < images.length; i++) {
+
+			var newId = 'n' + this.elemsAdded;
+
+			var newElem = {
+				id: newId,
+				type: 'img',
+				content: '/img/loading.gif',
+				size: 1,
+				language: 'NULL',
+				instruction: 'add',
+				position: newElems.length
+			}
+			newElems.push(newElem);
+			this.elemsAdded += 1;
+
+			// save the file
+			this.formData.set(newId, images[i]);
+
+			//preview the newly uploaded image
+			var reader = new FileReader();
+		    reader.readAsDataURL(images[i]);
+		    reader.onload = this.newImgLoaded.bind(this, newElems.length-1); 
+
+		}
+
+		this.setState({
+			elements: newElems
+		});
+
+	},
+
+	newImgLoaded: function(index, e) {
+
+		var newElems = this.state.elements;
+		newElems[index].content = e.target.result;
+
+		this.setState({
+			elements: newElems
+		});
+
+	},
 
 	//Submit changes
 	submit: function() {
@@ -137,8 +176,9 @@ var PageWrapper = React.createClass({
 			<div>
 				<div className='controls'>
 					<h4><a href="/">Home</a></h4>					
-					<p className='btn' onClick={this.addText}>Add text</p>					
-					<p id="update" className='btn' onClick={this.submit}>Save</p>	
+					<p className='btn' onClick={this.addText}>Add text</p>
+					<ImageUploadButton onChange={this.addImages}>Add Images</ImageUploadButton>
+					<p id="update" className='btn' onClick={this.submit}>Save</p>
 				</div>
 				<DraggableList className='contentList' onReOrder={this.onReOrderElems}>
 					{
@@ -148,11 +188,11 @@ var PageWrapper = React.createClass({
 								 onChange={this.onChange} elemDesc={elem} />
 							} else if(elem.type == 'img') {
 								return <ImgElem key={elem.id} index={i} sizeRange={this.imgSizes} 
-								 onChange={this.onChange} onFileUpload={this.uploadFile}
+								 onChange={this.onChange} onFileUpload={this.changeFile}
 							     loadingSrc='/img/loading.gif' elemDesc={elem} />
 							} else if(elem.type == 'video') {
 								return <VideoElem key={elem.id} index={i} sizeRange={this.imgSizes} 
-								 onChange={this.onChange} onFileUpload={this.uploadFile}
+								 onChange={this.onChange} onFileUpload={this.changeFile}
 								 loadingSrc='/img/loading.gif' videoFormats={this.videoFormats} 
 								 videoPlaceholder='/img/video.png' elemDesc={elem} />
 							}

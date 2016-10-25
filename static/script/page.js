@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -45,38 +45,39 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	var DraggableList = __webpack_require__(1);
-
+	
 	var TextElem = __webpack_require__(2).TextElem;
 	var ImgElem = __webpack_require__(2).ImgElem;
 	var VideoElem = __webpack_require__(2).VideoElem;
-
+	var ImageUploadButton = __webpack_require__(3).ImageUploadButton;
+	
 	var PageWrapper = React.createClass({
 		displayName: 'PageWrapper',
-
-
+	
+	
 		textSizes: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
 		imgSizes: [1, 2, 3, 4],
 		videoFormats: [{ ext: 'webm' }, { ext: 'mp4' }],
 		elemsAdded: 0,
-
+	
 		getInitialState: function getInitialState() {
 			return {
 				elements: []
 			};
 		},
 		componentDidMount: function componentDidMount() {
-
+	
 			this.formData = new FormData();
-
+	
 			var content = JSON.parse($("#contentJSON").html());
-
+	
 			this.setState({
 				elements: content
 			});
 		},
-
+	
 		onChange: function onChange(index, newElem) {
 			var newElems = this.state.elements;
 			newElems[index] = newElem;
@@ -84,40 +85,40 @@
 				elements: newElems
 			});
 		},
-		uploadFile: function uploadFile(id, file) {
-
+		changeFile: function changeFile(id, file) {
+	
 			// add the file to the form data object, with the element id so that it can be referenced by the element on the server
 			this.formData.set(id, file);
 		},
-
+	
 		onReOrderElems: function onReOrderElems(index1, index2) {
 			var newElems = this.state.elements;
-
+	
 			// swap the indexes
 			var swapTemp = newElems[index1];
 			newElems[index1] = newElems[index2];
 			newElems[index2] = swapTemp;
-
+	
 			// explicitly set a new index property equal to the new index
 			newElems[index1].position = index1;
 			// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
 			if (!newElems[index1].instruction) {
 				newElems[index1].instruction = 'edit';
 			}
-
+	
 			newElems[index2].position = index2;
 			// only add the edit instruction if the element doesn't already have an instruction (or if it's already edit)
 			if (!newElems[index2].instruction) {
 				newElems[index2].instruction = 'edit';
 			}
-
+	
 			this.setState({
 				elements: newElems
 			});
 		},
-
+	
 		getContent: function getContent() {},
-
+	
 		// Add text element
 		addText: function addText() {
 			var newElem = {
@@ -131,34 +132,71 @@
 			};
 			var newElems = this.state.elements;
 			newElems.push(newElem);
-			console.log(newElems);
 			this.setState({
 				elements: newElems
 			});
 			this.elemsAdded += 1;
 		},
-
-		id: React.PropTypes.number.isRequired,
-		content: React.PropTypes.string.isRequired,
-		size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
-		language: React.PropTypes.string.isRequired,
-		instruction: React.PropTypes.string,
-
+	
+		addImages: function addImages(images) {
+	
+			var newElems = this.state.elements;
+	
+			for (var i = 0; i < images.length; i++) {
+	
+				var newId = 'n' + this.elemsAdded;
+	
+				var newElem = {
+					id: newId,
+					type: 'img',
+					content: '/img/loading.gif',
+					size: 1,
+					language: 'NULL',
+					instruction: 'add',
+					position: newElems.length
+				};
+				newElems.push(newElem);
+				this.elemsAdded += 1;
+	
+				// save the file
+				this.formData.set(newId, images[i]);
+	
+				//preview the newly uploaded image
+				var reader = new FileReader();
+				reader.readAsDataURL(images[i]);
+				reader.onload = this.newImgLoaded.bind(this, newElems.length - 1);
+			}
+	
+			this.setState({
+				elements: newElems
+			});
+		},
+	
+		newImgLoaded: function newImgLoaded(index, e) {
+	
+			var newElems = this.state.elements;
+			newElems[index].content = e.target.result;
+	
+			this.setState({
+				elements: newElems
+			});
+		},
+	
 		//Submit changes
 		submit: function submit() {
 			console.log('Submit to server');
 			var changes = this.state.elements.filter(function (elem) {
 				return elem.instruction;
 			});
-
+	
 			//get the page id from hidden input
 			var pageId = document.getElementById('pageId').value;
 			this.formData.set('pageId', pageId);
-
+	
 			this.formData.set('content', JSON.stringify(changes));
-
+	
 			var method = "PATCH"; //hardcode to edit
-
+	
 			$.ajax({
 				type: method,
 				url: '/page',
@@ -174,7 +212,7 @@
 				}
 			});
 		},
-
+	
 		render: function render() {
 			return React.createElement(
 				'div',
@@ -197,6 +235,11 @@
 						'Add text'
 					),
 					React.createElement(
+						ImageUploadButton,
+						{ onChange: this.addImages },
+						'Add Images'
+					),
+					React.createElement(
 						'p',
 						{ id: 'update', className: 'btn', onClick: this.submit },
 						'Save'
@@ -211,11 +254,11 @@
 								onChange: this.onChange, elemDesc: elem });
 						} else if (elem.type == 'img') {
 							return React.createElement(ImgElem, { key: elem.id, index: i, sizeRange: this.imgSizes,
-								onChange: this.onChange, onFileUpload: this.uploadFile,
+								onChange: this.onChange, onFileUpload: this.changeFile,
 								loadingSrc: '/img/loading.gif', elemDesc: elem });
 						} else if (elem.type == 'video') {
 							return React.createElement(VideoElem, { key: elem.id, index: i, sizeRange: this.imgSizes,
-								onChange: this.onChange, onFileUpload: this.uploadFile,
+								onChange: this.onChange, onFileUpload: this.changeFile,
 								loadingSrc: '/img/loading.gif', videoFormats: this.videoFormats,
 								videoPlaceholder: '/img/video.png', elemDesc: elem });
 						}
@@ -224,7 +267,7 @@
 			);
 		}
 	});
-
+	
 	ReactDOM.render(React.createElement(PageWrapper, null), document.getElementById('container'));
 
 /***/ },
@@ -232,12 +275,12 @@
 /***/ function(module, exports) {
 
 	'use strict';
-
+	
 	// For this to work you need to add {...this.props.dragProps} to the childrens root node in their render method
-
+	
 	var DraggableList = React.createClass({
 		displayName: 'DraggableList',
-
+	
 		propTypes: {
 			onReOrder: React.PropTypes.func.isRequired,
 			onDrop: React.PropTypes.func,
@@ -247,11 +290,10 @@
 			className: ''
 		},
 		dragstart: function dragstart(index, e) {
-			console.log('elem drag');
 			e.target.style.opacity = 0.5;
 			this.draggedIndex = index;
 		},
-
+	
 		dragover: function dragover(index, e) {
 			if (this.draggedIndex != null) {
 				var thisRect = e.target.getBoundingClientRect();
@@ -261,7 +303,7 @@
 				}
 			}
 		},
-
+	
 		dragend: function dragend(e) {
 			if (this.draggedIndex != null) {
 				e.target.style.opacity = 1;
@@ -273,9 +315,7 @@
 		},
 		render: function render() {
 			var _this = this;
-
-			console.log(this.props.children);
-
+	
 			//Add drag event props to children
 			var childrenWithProps = React.Children.map(this.props.children, function (child, index) {
 				return React.cloneElement(child, {
@@ -294,7 +334,7 @@
 			);
 		}
 	});
-
+	
 	module.exports = DraggableList;
 
 /***/ },
@@ -302,45 +342,49 @@
 /***/ function(module, exports) {
 
 	'use strict';
-
+	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
+	
 	// Mixins
 	var ElemMixin = {
 		onSizeChange: function onSizeChange(e) {
 			var newDesc = this.props.elemDesc;
-
+	
 			//change descriptions value and instruction
 			newDesc.size = e.target.value;
 			if (newDesc.instruction != 'add') {
 				newDesc.instruction = 'edit';
 			}
-
+	
 			this.props.onChange(this.props.index, newDesc);
 		},
 		onLangChange: function onLangChange(e) {
 			var newDesc = this.props.elemDesc;
-
+	
 			//change descriptions value and instruction
 			newDesc.language = e.target.value;
 			if (newDesc.instruction != 'add') {
 				newDesc.instruction = 'edit';
 			}
-
+	
 			this.props.onChange(this.props.index, newDesc);
 		},
 		onDelete: function onDelete() {
 			var newDesc = this.props.elemDesc;
-
+	
+			console.log(this.props.elemDesc.instruction);
+	
 			if (newDesc.instruction == 'delete') {
 				//toggle the delete off
-
+	
+				console.log(newDesc.instruction_old);
+	
 				//if there's an old instruction re-instate this, otherwise remove the instruction 
 				if (newDesc.instruction_old) {
 					newDesc.instruction = newDesc.instruction_old;
 					delete newDesc.instruction_old;
 				} else {
-					newDesc.instruction;
+					delete newDesc.instruction;
 				}
 			} else if (newDesc.instruction == 'edit') {
 				//replace edit instruction but remember it incase we revert
@@ -351,14 +395,14 @@
 			} else {
 				newDesc.instruction = 'delete';
 			}
-
+	
 			this.props.onChange(this.props.index, newDesc);
 		}
 	};
 	// <img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
 	// 						<input type="file" class='hidden' accept="image/*" />
-
-
+	
+	
 	var TextElem = new React.createClass({
 		mixins: [ElemMixin],
 		propTypes: {
@@ -369,27 +413,26 @@
 				language: React.PropTypes.string.isRequired,
 				instruction: React.PropTypes.string
 			}).isRequired,
-
+	
 			sizeRange: React.PropTypes.array.isRequired,
 			onChange: React.PropTypes.func.isRequired
-
+	
 		},
 		onChange: function onChange(e) {
 			var newDesc = this.props.elemDesc;
-
+	
 			//change descriptions value and instruction
 			newDesc.content = e.target.value;
 			if (newDesc.instruction != 'add') {
 				newDesc.instruction = 'edit';
 			}
-
+	
 			this.props.onChange(this.props.index, newDesc);
 		},
 		componentDidMount: function componentDidMount() {
 			console.log(this.props.elemDesc.instruction);
 			if (this.props.elemDesc.instruction == 'add') {
 				console.log('set the focus');
-				console.log(this.refs);
 				ReactDOM.findDOMNode(this.refs.textArea).focus();
 			}
 		},
@@ -398,16 +441,16 @@
 			e.preventDefault();
 			e.stopPropagation();
 		},
-
+	
 		render: function render() {
-
+	
 			var elemDesc = this.props.elemDesc;
-
+	
 			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
 			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
-
+	
 			// ...dragProps are those appended by the draggable list
-
+	
 			return React.createElement(
 				'div',
 				_extends({ className: className }, this.props.dragProps),
@@ -422,69 +465,76 @@
 			);
 		}
 	});
-
+	
 	var ImgElem = new React.createClass({
 		mixins: [ElemMixin],
 		propTypes: {
 			elemDesc: React.PropTypes.shape({
-				id: React.PropTypes.number.isRequired,
+				id: React.PropTypes.oneOfType([React.PropTypes.number.isRequired, React.PropTypes.string.isRequired]),
 				content: React.PropTypes.string.isRequired,
 				size: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
 				language: React.PropTypes.string.isRequired,
 				instruction: React.PropTypes.string
 			}).isRequired,
-
+	
 			sizeRange: React.PropTypes.array.isRequired,
-
+	
 			onChange: React.PropTypes.func.isRequired,
 			onFileUpload: React.PropTypes.func.isRequired
-
+	
 		},
 		getInitialState: function getInitialState() {
 			return {
 				tempImg: null
 			};
 		},
+		componentDidMount: function componentDidMount() {
+			if (this.props.elemDesc.instruction == 'add') {
+				$('html, body').animate({
+					scrollTop: $(ReactDOM.findDOMNode(this.refs.RootElem)).offset().top
+				}, 500);
+			}
+		},
 		onImgClick: function onImgClick(e) {
 			//the image acts as a psuedo input, when click, passed the click to the actual input
 			$(e.target).siblings('input.hidden').click();
 		},
-
+	
 		onChange: function onChange(e) {
-
+	
 			// show the loading gif while the image is loading for preview
 			this.setState({
 				tempImg: this.props.loadingSrc
 			});
-
+	
 			//set the new instruction as edit
 			var newDesc = this.props.elemDesc;
 			newDesc.instruction = 'edit';
-
+	
 			this.props.onChange(this.props.index, newDesc);
-
+	
 			//send the new file
 			var file = e.target.files[0];
 			this.props.onFileUpload(newDesc.id, file);
-
+	
 			//preview the newly uploaded image
 			var reader = new FileReader();
 			reader.readAsDataURL(file);
 			reader.onload = function (e) {
-
+	
 				this.setState({
 					tempImg: e.target.result
 				});
 			}.bind(this);
 		},
-
+	
 		render: function render() {
-
+	
 			var elemDesc = this.props.elemDesc;
-
+	
 			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
 			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
-
+	
 			// the source can be one of 3 things
 			var src;
 			if (this.state.tempImg) {
@@ -494,11 +544,11 @@
 				//or the image passed down by props
 				src = elemDesc.content;
 			}
-
+	
 			// ...dragProps are those appended by the draggable list
 			return React.createElement(
 				'div',
-				_extends({ className: className }, this.props.dragProps),
+				_extends({ className: className }, this.props.dragProps, { ref: 'RootElem' }),
 				React.createElement('img', { src: src, draggable: 'false', onClick: this.onImgClick }),
 				React.createElement('input', { type: 'file', className: 'hidden', accept: 'image/*', onChange: this.onChange }),
 				React.createElement(SizeSelect, { value: elemDesc.size, range: this.props.sizeRange, onChange: this.onSizeChange }),
@@ -511,7 +561,7 @@
 			);
 		}
 	});
-
+	
 	var VideoElem = new React.createClass({
 		mixins: [ElemMixin],
 		propTypes: {
@@ -522,14 +572,14 @@
 				language: React.PropTypes.string.isRequired,
 				instruction: React.PropTypes.string
 			}).isRequired,
-
+	
 			sizeRange: React.PropTypes.array.isRequired,
-
+	
 			onChange: React.PropTypes.func.isRequired,
 			onFileUpload: React.PropTypes.func.isRequired,
-
+	
 			videoFormats: React.PropTypes.array.isRequired
-
+	
 		},
 		getInitialState: function getInitialState() {
 			return {
@@ -540,39 +590,39 @@
 			//the image acts as a psuedo input, when click, passed the click to the actual input
 			$(e.target).siblings('input.hidden').click();
 		},
-
+	
 		onChange: function onChange(e) {
-
+	
 			// show the loading gif while the image is loading for preview
 			this.setState({
 				tempImg: this.props.loadingSrc
 			});
-
+	
 			//set the new instruction as edit
 			var newDesc = this.props.elemDesc;
 			newDesc.instruction = 'edit';
-
+	
 			this.props.onChange(this.props.index, newDesc);
-
+	
 			//send the new file
 			var file = e.target.files[0];
 			this.props.onFileUpload(newDesc.id, file);
-
+	
 			//preview the video placeholder image
 			this.setState({
 				tempImg: this.props.videoPlaceholder
 			});
 		},
-
+	
 		render: function render() {
-
+	
 			var elemDesc = this.props.elemDesc;
-
+	
 			var className = elemDesc.instruction ? 'content ' + elemDesc.instruction : 'content';
 			var deleteText = elemDesc.instruction && elemDesc.instruction == 'delete' ? 'Undelete' : 'Delete';
-
+	
 			console.log(this.state.tempImg);
-
+	
 			var displayElem;
 			// if it's a new video, it's too heavy on the DOM to preview, so just show a placeholder img
 			if (this.state.tempImg) {
@@ -586,7 +636,7 @@
 					}.bind(this))
 				);
 			}
-
+	
 			return React.createElement(
 				'div',
 				_extends({ className: className }, this.props.dragProps),
@@ -602,16 +652,16 @@
 			);
 		}
 	});
-
+	
 	// Shared compontents
 	var SizeSelect = React.createClass({
 		displayName: 'SizeSelect',
-
+	
 		propTypes: {
 			value: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
 			range: React.PropTypes.array.isRequired,
 			onChange: React.PropTypes.func.isRequired
-
+	
 		},
 		render: function render() {
 			return React.createElement(
@@ -636,10 +686,10 @@
 			);
 		}
 	});
-
+	
 	var LangSelect = React.createClass({
 		displayName: 'LangSelect',
-
+	
 		propTypes: {
 			value: React.PropTypes.string,
 			onChange: React.PropTypes.func.isRequired
@@ -675,10 +725,45 @@
 			);
 		}
 	});
-
+	
 	module.exports.TextElem = TextElem;
 	module.exports.ImgElem = ImgElem;
 	module.exports.VideoElem = VideoElem;
 
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var ImageUploadButton = React.createClass({
+		displayName: 'ImageUploadButton',
+	
+		propTypes: {
+			onChange: React.PropTypes.func.isRequired
+		},
+		onClick: function onClick() {
+			ReactDOM.findDOMNode(this.refs.fileInput).click();
+		},
+		onChange: function onChange(e) {
+			this.props.onChange(e.target.files);
+		},
+		render: function render() {
+			return React.createElement(
+				'div',
+				null,
+				React.createElement(
+					'p',
+					{ onClick: this.onClick, className: 'btn' },
+					this.props.children
+				),
+				React.createElement('input', { ref: 'fileInput', onChange: this.onChange, type: 'file', className: 'hidden', multiple: true, accept: 'image/*' })
+			);
+		}
+	});
+	
+	module.exports.ImageUploadButton = ImageUploadButton;
+
 /***/ }
 /******/ ]);
+//# sourceMappingURL=page.js.map

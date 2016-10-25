@@ -25,14 +25,18 @@ var ElemMixin = {
 	onDelete: function() {
 		var newDesc = this.props.elemDesc;
 
+		console.log(this.props.elemDesc.instruction);
+
 		if (newDesc.instruction == 'delete') {	//toggle the delete off
+
+			console.log(newDesc.instruction_old);
 
 			//if there's an old instruction re-instate this, otherwise remove the instruction 
 			if(newDesc.instruction_old) {
 				newDesc.instruction = newDesc.instruction_old;
 				delete newDesc.instruction_old;
 			} else {
-				newDesc.instruction;
+				delete newDesc.instruction;
 			}
 
 		} else if (newDesc.instruction == 'edit') {	//replace edit instruction but remember it incase we revert
@@ -84,7 +88,6 @@ var TextElem = new React.createClass({
 		console.log(this.props.elemDesc.instruction);
 		if(this.props.elemDesc.instruction == 'add') {
 			console.log('set the focus');
-			console.log(this.refs)
 			ReactDOM.findDOMNode(this.refs.textArea).focus();
 		}
 	},
@@ -124,7 +127,10 @@ var ImgElem = new React.createClass({
 	mixins: [ElemMixin],
 	propTypes: {
 		elemDesc: React.PropTypes.shape({
-			id: React.PropTypes.number.isRequired,
+			id: React.PropTypes.oneOfType([
+				React.PropTypes.number.isRequired,
+				React.PropTypes.string.isRequired
+			]),
 			content: React.PropTypes.string.isRequired,
 			size: React.PropTypes.oneOfType([
 				React.PropTypes.string,
@@ -144,6 +150,13 @@ var ImgElem = new React.createClass({
 		return({
 			tempImg: null
 		})
+	},
+	componentDidMount: function() {
+		if(this.props.elemDesc.instruction == 'add') {
+			$('html, body').animate({
+		        scrollTop: $(ReactDOM.findDOMNode(this.refs.RootElem)).offset().top
+		    }, 500);
+		}
 	},
 	onImgClick: function(e) {
 		//the image acts as a psuedo input, when click, passed the click to the actual input
@@ -199,7 +212,7 @@ var ImgElem = new React.createClass({
 		
 		// ...dragProps are those appended by the draggable list
 		return(
-			<div className={className} {...this.props.dragProps}>
+			<div className={className} {...this.props.dragProps} ref='RootElem' >
 				
 				<img src={src} draggable="false" onClick={this.onImgClick} />
 				<input type="file" className='hidden' accept="image/*" onChange={this.onChange} />

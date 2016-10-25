@@ -10,7 +10,6 @@ var DraggableList = React.createClass({
 		className: ''
 	},
 	dragstart: function(index, e) {
-		console.log('elem drag');
 		e.target.style.opacity = 0.5;
 		this.draggedIndex = index;
 	},
@@ -36,8 +35,6 @@ var DraggableList = React.createClass({
 		}
 	},
 	render: function() {
-
-		console.log(this.props.children)
 
 		//Add drag event props to children
 		const childrenWithProps = React.Children.map(this.props.children,

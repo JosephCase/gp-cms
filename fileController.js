@@ -75,6 +75,7 @@ function deleteVideo(fileName, all_done) {
 }
 
 function saveFile(file, fileName, callback) {
+	console.log(file, fileName);
 	console.log('//save file');
 	if((typeof fileName) === 'string') {
 		
