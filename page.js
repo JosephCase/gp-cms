@@ -8,7 +8,8 @@ var db = require('./sqlConnection.js'),
 	swig = require('swig'),
 	url = require("url"),
 	async = require('async'),
-	querystring = require('querystring');
+	querystring = require('querystring'),
+	encoder = require('htmlEncode');
 
 var pageId = null;
 
@@ -41,6 +42,16 @@ function getExistingPage(response) {
 				console.log(err);
 			} else {
 				results[0][0].newPage = false;
+
+				// decodeText
+				for (var i = results[1].length - 1; i >= 0; i--) {
+					if(results[1][i].type == 'text') {
+						(function(i) {
+							results[1][i].content = encoder.htmlDecode(results[1][i].content);
+						})(i)
+					}
+				}
+
 				var html = swig.renderFile(__dirname + '/templates/page.html', {
 					page: results[0][0],
 				    pageContent: results[1],
@@ -247,11 +258,10 @@ function updatePageDetails(pageName, mainImage, visible, parent_callback) {
 // update the content within the page
 function updatePageContent(oContent, files, all_done_callback) {
 
-	console.log(oContent);
-
 	var tasks = [];
 
 	for(var propertyName in oContent) {
+
 		(function(content, file){
 			if(content.action === 'edit') {
 				tasks.push(function(callback) {
@@ -283,6 +293,11 @@ function updatePageContent(oContent, files, all_done_callback) {
 }
 
 function edit_content(obj, file, callback) {
+
+	// if it's text html encode
+	if(obj.type == 'text') {
+		obj.data = encoder.htmlEncode(obj.data);
+	}
 
 	db.connection.query( 
 		"UPDATE content SET content=COALESCE(?,content), size=COALESCE(?,size), language=COALESCE(?,language), position=COALESCE(?,position) WHERE id=?;" +
@@ -325,7 +340,10 @@ function delete_content(obj, callback) {
 
 function add_content(obj, callback) {
 
-	console.log(obj.type, obj.data, obj.size, obj.lang, obj.position, pageId);
+	// if it's text html encode
+	if(obj.type == 'text') {
+		obj.data = encoder.htmlEncode(obj.data);
+	}
 
 	db.connection.query( 
 		'INSERT INTO content' +

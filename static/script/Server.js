@@ -11,12 +11,9 @@ var Server = new function() {
 	}
 	this.setParentPageId = function(id) {
 		formData.set('parentPage_id', id);
-		console.log(id);
 	}
 	this.setNewPage = function(_newPage) {
-		console.log('setNewPage');
 		newPage = _newPage;
-		console.log(newPage);
 	}
 
 	// EDIT PAGE DETAILS
@@ -78,6 +75,7 @@ var Server = new function() {
 	this.editText = function(id, content) {
 
 		addInstruction(id, 'edit');
+		instructions[id].type = 'text';
 		instructions[id].data = content;
 
 		return true;

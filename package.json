@@ -1,15 +1,15 @@
 {
-	"dependencies": {
-		"async": "",
-		"cookie-parser": "",
-		"express": "",
-		"fluent-ffmpeg": "", 
-		"formidable": "", 
-		"imagemagick": "",
-		"mysql": "",
-		"path": "",
-		"querystring": "",
-		"swig": ""
-	}
+  "dependencies": {
+    "async": "",
+    "cookie-parser": "",
+    "express": "",
+    "fluent-ffmpeg": "",
+    "formidable": "",
+    "htmlencode": "0.0.4",
+    "imagemagick": "",
+    "mysql": "",
+    "path": "",
+    "querystring": "",
+    "swig": ""
+  }
 }
-
