@@ -3,8 +3,12 @@ document.addEventListener('DOMContentLoaded', pageReady);
 var oPages = {};
 var $loader = $('#loader');
 var Server;
+var pageContainer;
 
 function pageReady() {
+
+	pageContainer = document.getElementById('pageContainer');
+
 	attachEventListeners();
 	Server = new _Server();
 }
@@ -41,11 +45,19 @@ function attachEventListeners() {
 }
 
 function sectionClickHandler() {
-	$('.contentList').hide();
-	$('h5.section').css('backgroundColor', '#abc9d6')
+	$('h5.section').removeClass('selected');
+	Server.getPages(this.id, renderPageList);
+	$(this).addClass('selected');
+}
 
-	$(this).css('backgroundColor', '#365d6d')
-	$('.contentList[data-id='  + this.id + ']').show();
+function renderPageList(pageHtml) {
+	pageContainer.innerHTML = pageHtml;
+	var pages = pageContainer.getElementsByClassName('page');
+
+	// attach event listeners
+	for (var i = 0; i < pages.length; i++) {
+		pages[i].addEventListener('click', pageClickHandler);
+	}
 }
 
 function pageClickHandler() {
@@ -104,6 +116,12 @@ var _Server = function() {
 	function updateDone() {
 		// location.reload(true);
 		$loader.removeClass('loading');
+	}
+
+	this.getPages = function(sectionId, callback) {
+
+		$.get("/sections/" + sectionId, callback);
+
 	}
 
 }

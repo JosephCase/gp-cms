@@ -29,9 +29,8 @@ h1 {
     background-repeat: no-repeat;	
 }
 
-.controls h5:first-of-type {
+.controls h5.selected {
 	background-color: #365d6d;
-	/*border-color: #FF7043;*/
 }
 
 .contentList {

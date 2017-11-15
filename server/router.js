@@ -30,9 +30,11 @@ app.post("/login", controller.login);
 
 
 // // Homepage
-// app.get("/", function(req, res) {
-// 	homePage.getPage(res);
-// });
+app.get("/", controller.getNavPage);
+
+// sections
+app.get("/sections/:id", controller.getSectionPages)
+
 // app.put("/", function(req, res) {
 // 	homePage.reOrderPages(req, res);
 // });

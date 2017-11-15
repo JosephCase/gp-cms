@@ -3,6 +3,7 @@
 const swig = require('swig');
 const axios = require('axios');
 const formidable = require('formidable');
+const querystring = require('querystring');
 
 const config = require("../config/config.js");
 
@@ -19,8 +20,8 @@ exports.login = (req, res) => {
 
     form.parse(req, function(err, fields) {
         if (err) {
-        	console.log(`Error parsing login form: ${err}`);
-			return res.status(400).send("Unable to parse login form");
+            console.log(`Error parsing login form: ${err}`);
+            return res.status(400).send("Unable to parse login form");
         } else {
 
             let username = fields.username;
@@ -30,16 +31,47 @@ exports.login = (req, res) => {
 
                 axios.post(`${apiHost}/auth`, { username: username, password: password })
                     .then(api_res => {
-                		res.cookie('jwt', api_res.token);
-						return res.send('success');
+                        res.cookie('jwt', api_res.data.token);
+                        return res.send('success');
                     })
                     .catch(api_err => {
-						return res.send('failure');
+                        return res.send('failure');
                     })
 
             } else {
-				return res.status(400).send("failure");
+                return res.status(400).send("failure");
             }
         }
     });
+}
+
+exports.getNavPage = (req, res) => {
+
+    axios.get(`${apiHost}/navigation`)
+        .then(api_res => {           
+		    var html = swig.renderFile(global.appRoute + '/server/views/home.html', {
+				sections: api_res.data
+			});
+		    res.send(html);
+        })
+        .catch(api_err => {
+            return res.redirect('/login');
+        })
+}
+
+exports.getSectionPages = (req, res) => {
+
+	var sectionId = req.params.id;
+
+	axios.get(`${apiHost}/sections/${sectionId}/pages`)
+        .then(api_res => {           
+		    var html = swig.renderFile(global.appRoute + '/server/views/partials/pages.html', {
+		    	section_id: sectionId,
+				pages: api_res.data
+			});
+		    res.send(html);
+        })
+        .catch(api_err => {
+            return res.status(500).send();
+        })
 }
