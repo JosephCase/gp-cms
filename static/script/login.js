@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				} else if (data === 'failure') {
 					loginFailed();
 				} else {
-					alert('ERROR: There was a problem with your login. Please contact support.')
+					alert('ERROR: There was a problem with your login. Please contact support. ' + data);
 				}
 			});
 		}

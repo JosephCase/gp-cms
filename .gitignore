@@ -1,4 +1,2 @@
 /node_modules
-content/*
-static/content
-config.json
+config/config.js
