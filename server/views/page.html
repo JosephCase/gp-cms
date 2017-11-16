@@ -1,8 +1,8 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" type="text/css" href="css/theme.css">
-		<link rel="stylesheet" type="text/css" href="css/page.css">
+		<link rel="stylesheet" type="text/css" href="/css/theme.css">
+		<link rel="stylesheet" type="text/css" href="/css/page.css">
 		<script type='text/javascript' src='/script/jquery-1.12.3.min.js'></script>
 		<script type='text/javascript' src='/script/toolbox.js'></script>
 		<script type='text/javascript' src='/script/DOM.js'></script>
@@ -10,8 +10,7 @@
 	</head>
 	<body>
 
-		<input id='newPage' type='hidden' value={{page.newPage}} />
-		<input id='parentPage_id' type='hidden' value={{page.parentPage_id}} />
+		<!-- <input id='parentPage_id' type='hidden' value={{page.parentPage_id}} /> -->
 		<input id='pageId' type='hidden' value={{page.id}} />
 		
 		<div class='controls'>
@@ -20,9 +19,9 @@
 			<div id='pageDetails'>
 				<input id='pageName' type='text' value='{{ page.name }}' placeholder="Page name" />
 				<p class='errorMsg'>Please enter a page name</p>
-				{% if page.parentPage_id %}
+				{% if page.parentPage_id > 0 %}
 					<div id='mainImage'>
-						<img src="{{ contentDirectory + page.mainImage_url.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
+						<img src="{{ contentDirectory + page.mainImage_url.replace('.jpg', '_x' + imagePreviewSize + '.jpg') }}" draggable="false"  />
 						<input type="file" class='hidden' accept="image/*" />
 					</div>
 				{% endif %}
@@ -38,13 +37,13 @@
 
 		
 		<div class='contentList'>
-			{% for content in pageContent %}
+			{% for content in page.content %}
 			  	<div id='{{content.id}}' draggable="true" data-type='{{ content.type }}' class='content'>
 				  	{% if content.type == 'text' %}
 				  		<textarea draggable="true">{{ content.content }}</textarea>
 				  		{% set sizeRange = [12,13,14,15,16,17,18] %}
 				  	{% elseif content.type == 'img' %}
-				  		<img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + previewSize + '.jpg') }}" draggable="false"  />
+				  		<img src="{{ contentDirectory + content.content.replace('.jpg', '_x' + imagePreviewSize + '.jpg') }}" draggable="false"  />
 						<input type="file" class='hidden' accept="image/*" />
 				  		{% set sizeRange = [1,2,3,4] %}
 				  	{% elseif content.type == 'video' %}

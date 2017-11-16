@@ -75,3 +75,22 @@ exports.getSectionPages = (req, res) => {
             return res.status(500).send();
         })
 }
+
+exports.getPage = (req, res) => {
+
+    var pageId = req.params.id;
+
+    axios.get(`${apiHost}/pages/${pageId}?embed=content`)
+        .then(api_res => {           
+            var html = swig.renderFile(global.appRoute + '/server/views/page.html', {
+                page: api_res.data,
+                contentDirectory: apiHost + '/content/',
+                imagePreviewSize: config.imagePreviewSize,
+                videoFormats: config.videoFormats
+            });
+            res.send(html);
+        })
+        .catch(api_err => {
+            return res.status(500).send();
+        })
+}

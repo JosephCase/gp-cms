@@ -40,9 +40,7 @@ app.get("/sections/:id", controller.getSectionPages)
 // });
 
 // // Page
-// app.get("/page", function(req, res) {
-// 	page.getPage(req, res);
-// });
+app.get("/page/:id", controller.getPage);
 // app.post("/page", function(req, res) {
 // 	page.createPage(req, res);
 // });

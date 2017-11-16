@@ -8,17 +8,23 @@ var pageContainer;
 function pageReady() {
 
 	pageContainer = document.getElementById('pageContainer');
+	Server = new _Server();
+
+	if(Cookies.get("selectedSection")) {
+		var sectionId = Cookies.get("selectedSection");
+		Server.getPages(sectionId, renderPageList);
+		$('#' + sectionId).addClass('selected');
+	}
 
 	attachEventListeners();
-	Server = new _Server();
 }
 
 function attachEventListeners() {
 
 	// change section functionality
-	var pages = document.getElementsByClassName('section');
-	for (var i = 0; i < pages.length; i++) {
-		pages[i].addEventListener('click', sectionClickHandler);
+	var sections = document.getElementsByClassName('section');
+	for (var i = 0; i < sections.length; i++) {
+		sections[i].addEventListener('click', sectionClickHandler);
 	}
 
 	// add edit functionality
@@ -48,6 +54,7 @@ function sectionClickHandler() {
 	$('h5.section').removeClass('selected');
 	Server.getPages(this.id, renderPageList);
 	$(this).addClass('selected');
+	Cookies.set("selectedSection", this.id);
 }
 
 function renderPageList(pageHtml) {
@@ -62,7 +69,7 @@ function renderPageList(pageHtml) {
 
 function pageClickHandler() {
 	var pageId = this.id;
-	window.location.href = 'page?id=' + pageId;
+	window.location.href = 'page/' + pageId;
 }
 function addClickHandler() {
 	console.log('click');
