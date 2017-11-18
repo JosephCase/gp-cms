@@ -94,3 +94,24 @@ exports.getPage = (req, res) => {
             return res.status(500).send();
         })
 }
+
+exports.reOrderPages = (req, res) => {
+
+    let sectionId = req.params.id;
+    let pages = req.body;
+    let jwt = req.jwt;
+
+    axios({
+            method: 'patch',
+            url: `${apiHost}/sections/${sectionId}/pages`,
+            headers: { 'x-access-token': jwt },
+            data: pages
+        })
+        .then(api_res => {
+            exports.getSectionPages(req, res);
+        })
+        .catch(api_err => {
+                return res.status(500).send();
+        })
+
+}

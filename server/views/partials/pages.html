@@ -1,6 +1,6 @@
 <p class='content add' data-section_id={{section_id}}>Create new page</p>
 <div class='children'>
 	{% for page in pages %}
-		<p id='{{page.id}}' class='content page {% if !page.visible %}hidden{% endif %}'>{{page.name}}</p>
+		<p id='page_{{page.id}}' class='content page {% if !page.visible %}hidden{% endif %}'>{{page.name}}</p>
 	{% endfor %}
 </div>

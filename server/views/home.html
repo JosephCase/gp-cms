@@ -12,7 +12,7 @@
 		<div class='controls'>
 			<h1>Sections</h1>
 			{% for section in sections %}
-				<h5 id='{{section.id}}'{% if !section.isParent %} class='page{% if !section.visible %} hidden{% endif %}'{% else %} class='section'{% endif %}>{{section.name}}</h5>
+				<h5 id='section_{{section.id}}'{% if !section.isParent %} class='page{% if !section.visible %} hidden{% endif %}'{% else %} class='section'{% endif %}>{{section.name}}</h5>
 			{% endfor %}
 		</div>
 		<div id='pageContainer' class='contentList' data-id=''>

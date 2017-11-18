@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', pageReady);
 
-var oPages = {};
+var gPages = [];
 var $loader = $('#loader');
 var Server;
 var pageContainer;
+var currentSection;
 
 function pageReady() {
 
@@ -11,9 +12,9 @@ function pageReady() {
 	Server = new _Server();
 
 	if(Cookies.get("selectedSection")) {
-		var sectionId = Cookies.get("selectedSection");
-		Server.getPages(sectionId, renderPageList);
-		$('#' + sectionId).addClass('selected');
+		currentSection = Cookies.get("selectedSection");
+		Server.getPages(currentSection, renderPageList);
+		$('#section_' + currentSection).addClass('selected');
 	}
 
 	attachEventListeners();
@@ -39,36 +40,38 @@ function attachEventListeners() {
 		adds[i].addEventListener('click', addClickHandler);
 	}
 
-	//reorder functionality
-	var sections = document.getElementsByClassName('contentList');
-
-	for (var i = sections.length - 1; i >= 0; i--) {
-		if($(sections[i]).find('.children .page').length > 1) {
-			new DraggableList($(sections[i]).children('.children'), reOrder);
-		}
-	}
-
 }
 
 function sectionClickHandler() {
+
+	var section_id = this.id.split('_')[1];
+	currentSection = section_id;
+
+	Server.getPages(section_id, renderPageList);
+
 	$('h5.section').removeClass('selected');
-	Server.getPages(this.id, renderPageList);
 	$(this).addClass('selected');
-	Cookies.set("selectedSection", this.id);
+
+	Cookies.set("selectedSection", section_id);
 }
 
 function renderPageList(pageHtml) {
 	pageContainer.innerHTML = pageHtml;
-	var pages = pageContainer.getElementsByClassName('page');
+	pages = pageContainer.getElementsByClassName('page');
 
 	// attach event listeners
 	for (var i = 0; i < pages.length; i++) {
 		pages[i].addEventListener('click', pageClickHandler);
 	}
+
+	gPages = [];	//reset the global pages
+	if(pages.length > 1) {
+		new DraggableList($(pageContainer).children('.children'), reOrder);
+	}
 }
 
 function pageClickHandler() {
-	var pageId = this.id;
+	var pageId = this.id.split('_')[1];
 	window.location.href = 'page/' + pageId;
 }
 function addClickHandler() {
@@ -77,14 +80,21 @@ function addClickHandler() {
 	window.location.href = 'page?id=0&parent_id=' + parentPage_id;
 }
 function reOrder(id, index, lastIndex) {
-	// will add a new object with order, or edit if already exists
-	if(!oPages[id]) {
-		oPages[id] = {};
-		oPages[id].id = id;
-	}	
-	oPages[id].position = index;
+
+	var page_id = id.split('_')[1];
+
+	for (var i = gPages.length - 1; i >= 0; i--) {
+		if(gPages[i].id == page_id) {
+			gPages.splice(i, 1);
+			break;
+		}
+	}
+
+	gPages.push({id: page_id, position: index});
+
 	if(lastIndex) {
-		Server.update(oPages);
+		var section_id = pageContainer.id.split('_')[1];
+		Server.update(currentSection, gPages);
 	}
 }
 
@@ -96,18 +106,16 @@ var _Server = function() {
 
 	var $loader = $('#loader');
 
-	this.update = function(oPages) {
+	this.update = function(section_id, pages) {
 
 		if ($loader.hasClass('loading')) return false;	//stop double update
 		$loader.addClass('loading');
 
-		console.log($loader.length);
-
 		$.ajax({
-		    type: "PUT",
-		    url: "/",
+		    type: "PATCH",
+		    url: "/reorderPages/" + section_id,
 		    // The key needs to match your method's input parameter (case-sensitive).
-		    data: JSON.stringify(oPages),
+		    data: JSON.stringify(pages),
 			processData: false,
 			contentType: "application/json; charset=utf-8",
 		    success: updateDone,
@@ -116,6 +124,12 @@ var _Server = function() {
 		    },
 		    failure: function(errMsg) {
 		        alert(errMsg);
+		    },
+		    statusCode: {
+		        403: function() {
+		            alert("Does not have credentials");
+					window.location.replace('/login?forbidden=true');
+		        }
 		    }
 		});
 	}
