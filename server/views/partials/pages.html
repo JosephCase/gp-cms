@@ -1,6 +1,19 @@
-<p class='content add' data-section_id={{section_id}}>Create new page</p>
+<p id='addPage' class='content add'>Create new page</p>
 <div class='children'>
 	{% for page in pages %}
 		<p id='page_{{page.id}}' class='content page {% if !page.visible %}hidden{% endif %}'>{{page.name}}</p>
 	{% endfor %}
+</div>
+<div id='newPage'>
+	<div class='bg'></div>
+	<div class='form'>
+		<input type="hidden" id="section_id" value="{{section_id}}">		
+		<input id='pageName' type='text' value='' placeholder="Page name" />
+		<div id='mainImage'>
+			<img src="/img/placeholder.gif" draggable="false"  />
+			<input type="file" class='hide' accept="image/*" />
+		</div>
+		<p class='errorMsg hide'>Please enter a page name</p>
+		<p id="create" class='btn'>Create</p>
+	</div>
 </div>

@@ -1,17 +1,14 @@
 {
   "dependencies": {
     "async": "",
-    "axios": "^0.17.1",
     "body-parser": "^1.18.2",
     "cookie-parser": "",
     "express": "",
-    "fluent-ffmpeg": "",
     "formidable": "",
     "htmlencode": "0.0.4",
-    "imagemagick": "",
-    "mysql": "",
     "path": "",
     "querystring": "",
+    "request": "^2.83.0",
     "swig": ""
   }
 }
