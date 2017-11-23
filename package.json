@@ -1,13 +1,9 @@
 {
   "dependencies": {
-    "async": "",
     "body-parser": "^1.18.2",
     "cookie-parser": "",
     "express": "",
     "formidable": "",
-    "htmlencode": "0.0.4",
-    "path": "",
-    "querystring": "",
     "request": "^2.83.0",
     "swig": ""
   }
