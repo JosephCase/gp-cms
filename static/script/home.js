@@ -152,8 +152,6 @@ function reOrder(id, index, lastIndex) {
 
 
 var _Server = function() {
-	
-
 
 	var $loader = $('#loader');
 
@@ -165,23 +163,24 @@ var _Server = function() {
 		$.ajax({
 		    type: "PATCH",
 		    url: "/reorderPages/" + section_id,
-		    // The key needs to match your method's input parameter (case-sensitive).
 		    data: JSON.stringify(pages),
 			processData: false,
 			contentType: "application/json; charset=utf-8",
-		    success: updateDone,
-		    timeout: function() {
-		    	alert('timeout!');
-		    },
-		    failure: function(errMsg) {
-		        alert(errMsg);
-		    },
 		    statusCode: {
+		    	200: updateDone,
+		        401: function() {
+		            alert("Oops.. your login credentials may have expired. Please try logging in again.");
+					window.location.replace('/login');
+		        },
 		        403: function() {
-		            alert("Does not have credentials");
-					window.location.replace('/login?forbidden=true');
+		            alert("Oops.. your login credentials may have expired. Please try logging in again.");
+					window.location.replace('/login');
+		        },
+		        500: function() {
+		            alert("There was a problem. Please try again.");
 		        }
 		    }
+
 		});
 	}
 
@@ -193,7 +192,10 @@ var _Server = function() {
 
 	this.getPages = function(sectionId, callback) {
 
-		$.get("/sections/" + sectionId, callback);
+		if ($loader.hasClass('loading')) return false;	//stop double update
+		$loader.addClass('loading');
+
+		$.get("/sections/" + sectionId, updateDone);
 
 	}
 
@@ -213,17 +215,19 @@ var _Server = function() {
 		    data: formData,
 			processData: false,
 			contentType: false,
-		    success: function(res) { 
-		    	// var pageId = JSON.parse(res).id;
-				renderPageList(res);
-		    	$loader.removeClass('loading');
-		    	// window.location.replace("/pages/" + pageId);
-		    },
-		    timeout: function() {
-		    	alert('timeout!');
-		    },
-		    failure: function(errMsg) {
-		        alert(errMsg);
+		    statusCode: {
+		    	200: updateDone,
+		        401: function() {
+		            alert("Oops.. your login credentials may have expired. Please try logging in again.");
+					window.location.replace('/login');
+		        },
+		        403: function() {
+		            alert("Oops.. your login credentials may have expired. Please try logging in again.");
+					window.location.replace('/login');
+		        },
+		        500: function() {
+		            alert("There was a problem. Please try again.");
+		        }
 		    }
 		});
 	}

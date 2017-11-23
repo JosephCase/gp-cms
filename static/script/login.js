@@ -19,14 +19,22 @@ document.addEventListener('DOMContentLoaded', function() {
 		var password = passwordInput.value.trim();
 
 		if(validate(username, password)) {
-			$.post( "/login", { username: username, password: password }, function( data ) {
-				if(data === 'success') {
-					window.location.replace('/');
-				} else if (data === 'failure') {
-					loginFailed();
-				} else {
-					alert('ERROR: There was a problem with your login. Please contact support. ' + data);
-				}
+
+			$.ajax({
+			    type: "POST",
+			    url: "/login",
+			    data: { username: username, password: password },
+			    statusCode: {
+			    	200: function() {
+						window.location.replace('/');
+			        },
+			        401: function() {
+						loginFailed();
+			        },
+			        500: function() {
+			            alert("There was a problem. Please try again.");
+			        }
+			    }
 			});
 		}
 	});

@@ -47,10 +47,10 @@ exports.login = (req, res) => {
                         return res.status(500).send();
                     }
                     if(body.success !== true){
-                        return res.send('failure');
+                        return res.status(401).send();
                     } else {
                         res.cookie('jwt', body.token);
-                        return res.send('success');
+                        return res.send();
                     }
                 })
 
@@ -128,7 +128,11 @@ exports.reOrderPages = (req, res) => {
             console.log(`API Error re-ordering pages, ${err}`);
             return res.status(500).send();
         }
-        exports.getSectionPages(req, res);
+        if(api_res.statusCode != 200) {
+            return res.status(api_res.statusCode).send();
+        } else {
+            exports.getSectionPages(req, res);
+        }
     })
 }
 
@@ -146,8 +150,11 @@ exports.createPage = (req, res) => {
             console.log(`API Error creating new page, ${err}`);
             return res.status(500).end();
         }
-
-        exports.getSectionPages(req, res);
+        if(api_res.statusCode != 201) {
+            return res.status(api_res.statusCode).send();
+        } else {
+            exports.getSectionPages(req, res);
+        }
 
     }));
 }
