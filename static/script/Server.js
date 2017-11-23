@@ -2,18 +2,11 @@ var Server = new function() {
 
 	var formData = new FormData();
 	var instructions = {};
-	var newPage = false;
+	var pageId = null;
 
 	//SET THE PAGE ID
 	this.setPageId = function(id) {
-		formData.set('pageId', id);
-		console.log(id);
-	}
-	this.setParentPageId = function(id) {
-		formData.set('parentPage_id', id);
-	}
-	this.setNewPage = function(_newPage) {
-		newPage = _newPage;
+		pageId = id;
 	}
 
 	// EDIT PAGE DETAILS
@@ -25,9 +18,7 @@ var Server = new function() {
 		return true;
 	}
 	this.editVisible = function() {
-		console.log(this.checked);
 		formData.set('visible', this.checked);
-		console.log(formData.get('visible'));
 	}
 
 	/*
@@ -40,18 +31,18 @@ var Server = new function() {
 		var fileType;
 
 		if(file.type.indexOf('image') != -1) {
-			fileType = 'img';
+			fileType = 'image';
 		} else if (file.type.indexOf('video') != -1) {
 			fileType = 'video';
 		} else {
 			return false;
 		}
 		
-		addInstruction(id, 'add');
+		addInstruction(id, 'create');
 
 		instructions[id].type = fileType;
 		instructions[id].size = size;
-		instructions[id].lang = lang;
+		instructions[id].language = lang;
 		instructions[id].position = index;
 
 		formData.append(id, file);
@@ -62,11 +53,11 @@ var Server = new function() {
 
 	this.addText = function(id, size, lang, index) {
 
-		addInstruction(id, 'add');
+		addInstruction(id, 'create');
 
 		instructions[id].type = 'text';
 		instructions[id].size = size;
-		instructions[id].lang = lang;
+		instructions[id].language = lang;
 		instructions[id].position = index;
 
 		return true;
@@ -74,7 +65,7 @@ var Server = new function() {
 
 	this.editText = function(id, content) {
 
-		addInstruction(id, 'edit');
+		addInstruction(id, 'update');
 		instructions[id].type = 'text';
 		instructions[id].data = content;
 
@@ -84,38 +75,41 @@ var Server = new function() {
 
 	this.editFile = function(id, file) {
 		
-		addInstruction(id, 'edit');
+		addInstruction(id, 'update');
 		formData.set(id, file);
 
 		return true;
 
 	}
 
-	this.editSize = function(id, size) {
+	this.editSize = function(id, size, type) {
 
-		addInstruction(id, 'edit');
+		addInstruction(id, 'update');
 		instructions[id].size = size;
+		instructions[id].type = type;
+
 
 		return true;
 	}
 
-	this.editLanguage = function(id, lang) {
+	this.editLanguage = function(id, lang, type) {
 
-		addInstruction(id, 'edit');
-		instructions[id].lang = lang;
+		addInstruction(id, 'update');
+		instructions[id].language = lang;
+		instructions[id].type = type;
 
 		return true;
 	}
 
-	this.reOrder = function(id, index) {
-		console.log(id, index);
-		addInstruction(id, 'edit');
+	this.reOrder = function(id, index, type) {
+		addInstruction(id, 'update');
 		instructions[id].position = index;
+		instructions[id].type = type;
 	}
 
 	this.toggleDeleteContent = function(id, type) {
 
-		if(instructions[id] && (instructions[id].action == 'delete' || instructions[id].action == 'add')) {	//undelete
+		if(instructions[id] && (instructions[id].action == 'delete' || instructions[id].action == 'create')) {	//undelete
 			if(instructions[id].oldAction) {
 				//Work around so that elements that have been edited -> delete -> undeleted will revent back to edit
 				instructions[id].action = instructions[id].oldAction;
@@ -142,17 +136,9 @@ var Server = new function() {
 
 		formData.append('content', JSON.stringify(instructions));
 
-		var method;
-		if(newPage == 'true') {
-			method = "POST";
-		} else {
-			method = "PATCH";
-		}
-
 		$.ajax({
-		    type: method,
-		    url: '/page',
-		    // The key needs to match your method's input parameter (case-sensitive).
+		    type: "PATCH",
+		    url: '/pages/' + pageId,
 		    data: formData,
 			processData: false,
 			contentType: false,

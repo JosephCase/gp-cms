@@ -145,6 +145,7 @@ exports.createPage = (req, res) => {
         json: false //for apiRequest we have set this to true
     }
 
+    // pipe the request directly to the API
     req.pipe(apiRequest.post(reqOptions, (err, api_res, body) => {
         if(err) {
             console.log(`API Error creating new page, ${err}`);
@@ -154,6 +155,31 @@ exports.createPage = (req, res) => {
             return res.status(api_res.statusCode).send();
         } else {
             exports.getSectionPages(req, res);
+        }
+
+    }));
+}
+
+exports.updatePage = (req, res) => {
+
+    let pageId = req.params.id;
+
+    let reqOptions = {
+        url: `/pages/${pageId}`,
+        json: false //for apiRequest we have set this to true
+    }
+
+    // pipe the request directly to the API
+    req.pipe(apiRequest.patch(reqOptions, (err, api_res, body) => {
+        if(err) {
+            console.log(`API Error updating page, ${err}`);
+            return res.status(500).end();
+        }
+        if(api_res.statusCode != 200) {
+            return res.status(api_res.statusCode).send();
+        } else {
+            return res.send();
+            // exports.getSectionPages(req, res);
         }
 
     }));

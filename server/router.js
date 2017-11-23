@@ -39,6 +39,7 @@ app.use(bodyParser.json());
 // sections
 app.patch("/reorderPages/:id", controller.reOrderPages)
 app.post("/sections/:id/pages", controller.createPage)
+app.patch("/pages/:id", controller.updatePage)
 
 module.exports = app;
 

@@ -7,8 +7,6 @@ var DOM = new function() {
 
 	function pageReadyHandler() {
 		Server.setPageId(document.getElementById('pageId').value);
-		Server.setParentPageId(document.getElementById('parentPage_id').value);
-		Server.setNewPage(document.getElementById('newPage').value);
 
 		// if the image src doesn't exist. Replace it with a placeholder image
 		$('img').on('error', function() {
@@ -60,7 +58,10 @@ var DOM = new function() {
 		$('.delete').on("click", deleteHandler);
 
 		//re-order functionality
-		dragList = new DraggableList($('.contentList'), Server.reOrder);
+		dragList = new DraggableList($('.contentList'), function(id, index) {
+			var type = document.getElementById(id).getAttribute('data-type');
+			Server.reOrder(id, index, type)
+		});
 		$('.content textarea').on("dragstart", function(e) {
 			e.preventDefault();
 		});
@@ -75,7 +76,7 @@ var DOM = new function() {
 	function editMainImage() {
 
 		var displayElem = $(this).siblings('img')[0];
-		displayElem.src = 'img/loading.gif';
+		displayElem.src = '/img/loading.gif';
 
 		var file = this.files[0];
 
@@ -103,8 +104,9 @@ var DOM = new function() {
 	function editSizeHandler() {
 
 		var id = $(this).parent().attr('id');
-		var size = $(this).val();		
-		if(Server.editSize(id, size)) {
+		var size = $(this).val();
+		var type = $(this).parent().attr('data-type');		
+		if(Server.editSize(id, size, type)) {
 			$(this).parent().addClass('edited');
 		}
 	}
@@ -112,8 +114,9 @@ var DOM = new function() {
 	function editLangHandler() {
 
 		var id = $(this).parent().attr('id');
-		var lang = $(this).val();		
-		if(Server.editLanguage(id, lang)) {
+		var lang = $(this).val();	
+		var type = $(this).parent().attr('data-type');		
+		if(Server.editLanguage(id, lang, type)) {
 			$(this).parent().addClass('edited');
 		}
 	}
@@ -128,7 +131,7 @@ var DOM = new function() {
 		$parent = $elem.parent();
 
 		var displayElem = $elem.siblings('img, video')[0];
-		displayElem.src = 'img/loading.gif';
+		displayElem.src = '/img/loading.gif';
 
 		var file = this.files[0];
 
@@ -138,10 +141,10 @@ var DOM = new function() {
 
 	    	if(Server.editFile($parent.attr('id'), file)) {
 		    		setTimeout(function() {		//timeout just to improve user inter
-			    		if($parent.attr('data-type') == 'img') {
+			    		if($parent.attr('data-type') == 'image') {
 				    		displayElem.src = e.target.result;
 			    		} else {
-			    			displayElem.src = 'img/video.png';
+			    			displayElem.src = '/img/video.png';
 			    		}
 		    		}, 1000);	    	
 				$parent.addClass('edited');
@@ -252,12 +255,12 @@ var DOM = new function() {
 		var elemHTML;
 
 		if(file.type.indexOf('image') != -1) {
-			elemHTML = "<div id='new_" + (newElems++) + "' data-type='img' data-new draggable='true' class='content'>";
-			elemHTML += "<img src='img/loading.gif' draggable='false' />";
+			elemHTML = "<div id='new_" + (newElems++) + "' data-type='image' data-new draggable='true' class='content'>";
+			elemHTML += "<img src='/img/loading.gif' draggable='false' />";
 			elemHTML += "<input type='file' class='hidden' accept='image/*' />";
 		} else {
 			elemHTML = "<div id='new_" + (newElems++) + "' data-type='video' data-new draggable='true' class='content'>";
-			elemHTML += "<img src='img/loading.gif' draggable='false' />";
+			elemHTML += "<img src='/img/loading.gif' draggable='false' />";
 			elemHTML += "<input type='file' class='hidden' accept='video/*' />";
 		}
 
@@ -292,7 +295,7 @@ var DOM = new function() {
 	//previews the uploaded image on the page
 	function previewFile($newElemt, file) {
 
-		if($newElemt.attr('data-type') == 'img') {
+		if($newElemt.attr('data-type') == 'image') {
 			var reader = new FileReader();
 			reader.addEventListener('load', function(e) {
 
@@ -303,7 +306,7 @@ var DOM = new function() {
 		    	reader.readAsDataURL(file);
 		    }, 500);
 		} else {
-			$newElemt.children('img')[0].src = 'img/video.png';
+			$newElemt.children('img')[0].src = '/img/video.png';
 		}
 
 		
