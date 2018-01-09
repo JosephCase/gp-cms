@@ -27,13 +27,14 @@ app.use(express.static(global.appRoute + '/static'));
 app.get("/login", controller.getLoginPage)
 app.post("/login", controller.login);
 
+app.use(cookieParser("'blue_sky'"));
+app.use(sessionChecker);
+
 app.get("/", controller.getNavPage);
 app.get("/sections/:id", controller.getSectionPages)
 app.get("/pages/:id", controller.getPage);
 
 // Homepage
-app.use(cookieParser("'blue_sky'"));
-app.use(sessionChecker);
 app.use(bodyParser.json());
 
 // sections

@@ -143,10 +143,18 @@ var Server = new function() {
 			processData: false,
 			contentType: false,
 		    success: DOM.refresh,
-		    error: function(errMsg) {
-		    	console.log(errMsg);
-		        alert('There was a problem updating this page. Please contact support.');
-		        DOM.refresh();
+		    error: function(err) {
+		    	console.log(err.statusText);
+		        switch(err.status) {
+		        	case 401:
+		        	case 403:
+		        		alert('It appears there is a problem with your login, it may have expired, please try logging in again :)');
+		        		window.location.href = '/login'
+		        		break;
+		        	default:
+		        		alert('There was a problem updating this page. Please contact support.');
+		        		DOM.refresh();
+		        }
 		    }
 		});		
 	}
