@@ -13,8 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		this.classList.remove('error');
 		errorMsg.classList.remove('error');
 	});
-	loginBtn.addEventListener('click', function() {
+	loginBtn.addEventListener('click', submitLogin);
+	passwordInput.addEventListener('keypress', function(e) {
+		if(e.keyCode == 13) submitLogin();
+	})
 
+	function submitLogin() {
 		var username = usernameInput.value.trim();
 		var password = passwordInput.value.trim();
 
@@ -37,9 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			    }
 			});
 		}
-	});
-
-
+	}
 
 	function validate(username, password) {
 
