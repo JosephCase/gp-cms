@@ -44,7 +44,8 @@ exports.login = (req, res) => {
 
                 apiRequest.post(reqOptions, (err, api_res, body) => {
                     if(err) {
-                        return res.status(500).send();
+                	console.log(err);   
+		    return res.status(500).send();
                     }
                     if(body.success !== true){
                         return res.status(401).send();
@@ -102,7 +103,7 @@ exports.getPage = (req, res) => {
         }
         var html = swig.renderFile(`${templateDir}/page.html`, {
             page: body,
-            contentDirectory: apiHost + '/content/',
+            contentDirectory: config.contentDirectory,
             imagePreviewSize: config.imagePreviewSize,
             videoFormats: config.videoFormats
         });
